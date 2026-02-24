@@ -1,0 +1,25 @@
+<header class="bg-white border-b border-neutral-200 shadow-sm sticky top-0 z-40">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <a [routerLink]="routes.DASHBOARD" class="text-xl font-bold text-secondary tracking-tight">{{ appName }}</a>
+      <nav class="flex items-center gap-8">
+        <a [routerLink]="routes.DASHBOARD" routerLinkActive="text-primary border-b-2 border-primary" [routerLinkActiveOptions]="{ exact: true }"
+           class="text-neutral-600 hover:text-neutral-900 pb-0.5 border-b-2 border-transparent transition-colors">Dashboard</a>
+        <a [routerLink]="routes.TRANSACTIONS" routerLinkActive="text-primary border-b-2 border-primary"
+           class="text-neutral-600 hover:text-neutral-900 pb-0.5 border-b-2 border-transparent transition-colors">Transações</a>
+        <a [routerLink]="routes.ACCOUNTS" routerLinkActive="text-primary border-b-2 border-primary"
+           class="text-neutral-600 hover:text-neutral-900 pb-0.5 border-b-2 border-transparent transition-colors">Contas</a>
+        <a [routerLink]="routes.REPORTS" routerLinkActive="text-primary border-b-2 border-primary"
+           class="text-neutral-600 hover:text-neutral-900 pb-0.5 border-b-2 border-transparent transition-colors">Relatórios</a>
+      </nav>
+      <div class="flex items-center gap-2 text-neutral-600">
+        <span class="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-500" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </span>
+        <span class="text-sm font-medium">{{ userName }}</span>
+      </div>
+    </div>
+  </div>
+</header>

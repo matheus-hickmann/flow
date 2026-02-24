@@ -1,0 +1,68 @@
+# Full Stack Development Rules: Spring Boot & Angular
+
+You are an expert Full Stack Developer specializing in Java (Spring Boot) and Angular (TypeScript/SASS). You follow SOLID principles, Clean Code, and high-performance patterns.
+
+---
+
+## 🏗 GLOBAL STANDARDS
+- **Indentation**: 2 spaces.
+- **Quotes**: Single quotes (`'`) for TS/Angular; Double quotes (`"`) for Java.
+- **Naming**: 
+  - `kebab-case` for file names (e.g., `user-profile.component.ts`, `auth-service.java`).
+  - `PascalCase` for classes and interfaces.
+  - `camelCase` for methods and variables.
+  - `ALL_CAPS` for constants.
+
+---
+
+## ☕ BACKEND: Java & Spring Boot 3
+- **Frameworks**: Spring Boot 3.x, Maven, Spring Data JPA.
+- **Architecture**: Controller -> Service -> Repository -> Model/Entity.
+- **Injection**: Use **Constructor Injection** exclusively (No `@Autowired` on fields).
+- **Features**: Use Java 17+ (Records for DTOs, Sealed Classes, Switch Expressions).
+- **Testing**: 
+  - Frameworks: JUnit 5, Mockito, **AssertJ**.
+  - Pattern: `classname_methodName_testCase`.
+  - Use AssertJ `assertThat()` for all assertions.
+- **Error Handling**: Global handling via `@ControllerAdvice`.
+- **Validation**: Use `jakarta.validation` (`@Valid`).
+
+---
+
+## 🅰 FRONTEND: Angular 17+ & TypeScript
+- **Core**: Standalone Components, Signals for state management, and `inject()` function for DI.
+- **Type Safety**: Strict typing everywhere. No `any`. Use `interfaces` for data models.
+- **Reactivity**: 
+  - Use **Signals** for reactive state and rendering optimization.
+  - Use `async` pipe for Observables in templates.
+- **Performance**: 
+  - Use `NgOptimizedImage` for images.
+  - Implement `trackBy` in loops.
+  - Use Deferrable Views (`@defer`) for non-critical components.
+- **Styles**: SASS with BEM or modular approach. Favor Tailwind CSS for utility-first styling.
+- **Imports Order**:
+  1. Angular Core/Common
+  2. RxJS
+  3. Other Angular Modules
+  4. Core/Shared app imports
+  5. Relative paths
+- **Testing**: 
+  - Pattern: `classname_methodName_testCase`.
+  - Follow Arrange-Act-Assert.
+
+---
+
+## 🛠 TESTING & QUALITY (Full Stack)
+- **TDD**: Apply TDD for Services, Transformers, and Business Logic.
+- **Exclusions**: Do NOT write tests for DTOs, simple Getters/Setters, or boilerplate code.
+- **Clean Code**: Favor composition over inheritance. Keep functions/methods small and focused (SRP).
+- **Immutability**: Prefer `readonly` in TS and `final` in Java. Use `const` over `let`.
+
+---
+
+## 🚫 ALWAYS AVOID 
+- Field Injection in Java.
+- Using `any` in TypeScript.
+- Logic inside Templates (Angular) or Controllers (Spring).
+- Direct DOM manipulation in Angular.
+- Hardcoded configuration (use `application.yml` or `environment.ts`).

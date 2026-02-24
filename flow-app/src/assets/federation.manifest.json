@@ -1,0 +1,6 @@
+{
+  "dashboard": "http://localhost:4201/remoteEntry.json",
+  "transactions": "http://localhost:4202/remoteEntry.json",
+  "accounts": "http://localhost:4203/remoteEntry.json",
+  "reports": "http://localhost:4204/remoteEntry.json"
+}

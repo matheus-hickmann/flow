@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Cores do tema vêm exclusivamente de tailwind.config.js (design tokens). */
+
+body {
+  @apply bg-neutral-50 text-neutral-800 font-sans;
+}

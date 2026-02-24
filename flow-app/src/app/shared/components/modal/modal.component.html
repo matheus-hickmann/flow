@@ -1,0 +1,24 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+     role="dialog"
+     aria-modal="true"
+     (click)="onOverlayClick($event)">
+  <div class="absolute inset-0 modal-overlay bg-neutral-900/50"
+       aria-hidden="true"></div>
+  <div class="relative bg-white rounded-xl shadow-xl max-h-[90vh] w-full max-w-lg flex flex-col"
+       (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-200 shrink-0">
+      <h2 class="text-lg font-semibold text-neutral-800">{{ title() }}</h2>
+      <button type="button"
+              (click)="close()"
+              class="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
+              aria-label="Fechar">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <div class="px-6 py-4 overflow-y-auto flex-1">
+      <ng-content />
+    </div>
+  </div>
+</div>

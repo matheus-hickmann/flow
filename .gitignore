@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build / cache
+dist/
+.angular/
+*.tsbuildinfo
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Logs and temp
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Java / Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Env / secrets
+.env
+.env.local
+*.pem

@@ -1,0 +1,43 @@
+<div class="fixed bottom-8 right-8 flex flex-col items-end gap-3 z-30">
+  @if (isOpen()) {
+    <div class="flex flex-col items-end gap-2" @fabExpand>
+      @for (option of options(); track option.id) {
+        <button type="button"
+                (click)="onOptionClick(option.id)"
+                class="flex items-center gap-3 w-44 h-11 rounded-full bg-white shadow-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50 transition-colors text-sm font-medium pl-4 pr-5"
+                [attr.aria-label]="option.label">
+          <span class="flex shrink-0 w-5 h-5 flex items-center justify-center text-neutral-500">
+            @switch (option.id) {
+              @case ('expense') {
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
+                </svg>
+              }
+              @case ('income') {
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              }
+              @case ('planning') {
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              }
+            }
+          </span>
+          <span class="text-left truncate">{{ option.label }}</span>
+        </button>
+      }
+    </div>
+  }
+  <button type="button"
+          (click)="openChange.emit()"
+          class="w-14 h-14 rounded-full bg-primary hover:opacity-90 text-white shadow-lg flex items-center justify-center transition-transform duration-300 ease-in-out z-10"
+          [class.rotate-45]="isOpen()"
+          [attr.aria-label]="ariaLabelToggle()"
+          [attr.aria-expanded]="isOpen()">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+    </svg>
+  </button>
+</div>

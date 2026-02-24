@@ -1,0 +1,116 @@
+<app-modal [title]="'Novo Planejamento'" (closed)="onClose()">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+    <div>
+      <label for="plan-type" class="block text-sm font-medium text-neutral-700 mb-1">Tipo</label>
+      <select id="plan-type" formControlName="planType"
+              class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary">
+        <option value="limit">Limite por categoria</option>
+        <option value="goal">Meta de investimento</option>
+        <option value="params">Parâmetros econômicos (Selic / IPCA)</option>
+      </select>
+    </div>
+
+    @switch (form.get('planType')?.value) {
+      @case ('limit') {
+        <div class="space-y-4 pt-2">
+          <div>
+            <label for="plan-category" class="block text-sm font-medium text-neutral-700 mb-1">Categoria</label>
+            <select id="plan-category" formControlName="category"
+                    class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary">
+              <option value="">Selecione</option>
+              @for (cat of categories; track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
+            @if (form.get('category')?.invalid && form.get('category')?.touched) {
+              <p class="mt-1 text-sm text-danger">Selecione uma categoria.</p>
+            }
+          </div>
+          <div>
+            <label for="plan-limit-type" class="block text-sm font-medium text-neutral-700 mb-1">Tipo de limite</label>
+            <select id="plan-limit-type" formControlName="limitType"
+                    class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary">
+              <option value="ABSOLUTE">Valor absoluto (R$)</option>
+              <option value="PERCENTAGE">Percentual da renda (%)</option>
+            </select>
+          </div>
+          <div>
+            <label for="plan-limit-value" class="block text-sm font-medium text-neutral-700 mb-1">Valor</label>
+            <input id="plan-limit-value" type="number" formControlName="limitValue" step="0.01" min="0"
+                   class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                   [placeholder]="form.get('limitType')?.value === 'PERCENTAGE' ? 'Ex.: 30' : '0,00'">
+            @if (form.get('limitValue')?.invalid && form.get('limitValue')?.touched) {
+              <p class="mt-1 text-sm text-danger">Informe um valor positivo.</p>
+            }
+          </div>
+        </div>
+      }
+      @case ('goal') {
+        <div class="space-y-4 pt-2">
+          <div>
+            <label for="plan-goal-name" class="block text-sm font-medium text-neutral-700 mb-1">Nome da meta</label>
+            <input id="plan-goal-name" type="text" formControlName="goalName"
+                   class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                   placeholder="Ex.: Reserva de emergência">
+            @if (form.get('goalName')?.invalid && form.get('goalName')?.touched) {
+              <p class="mt-1 text-sm text-danger">Nome é obrigatório.</p>
+            }
+          </div>
+          <div>
+            <label for="plan-return" class="block text-sm font-medium text-neutral-700 mb-1">Taxa de retorno esperada (% a.a.)</label>
+            <input id="plan-return" type="number" formControlName="expectedReturnRate" step="0.01" min="0"
+                   class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                   placeholder="Ex.: 12">
+          </div>
+          <div>
+            <label for="plan-monthly" class="block text-sm font-medium text-neutral-700 mb-1">Aporte mensal (R$)</label>
+            <input id="plan-monthly" type="number" formControlName="monthlyContribution" step="0.01" min="0"
+                   class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                   placeholder="0,00">
+          </div>
+          <div>
+            <label for="plan-target" class="block text-sm font-medium text-neutral-700 mb-1">Valor meta (R$) – opcional</label>
+            <input id="plan-target" type="number" formControlName="targetAmount" step="0.01" min="0"
+                   class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                   placeholder="0,00">
+          </div>
+        </div>
+      }
+      @case ('params') {
+        <div class="space-y-4 pt-2">
+          <div>
+            <label for="plan-selic" class="block text-sm font-medium text-neutral-700 mb-1">Expectativa Selic (% a.a.)</label>
+            <input id="plan-selic" type="number" formControlName="selicRate" step="0.01" min="0"
+                   class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                   placeholder="Ex.: 10,5">
+            @if (form.get('selicRate')?.invalid && form.get('selicRate')?.touched) {
+              <p class="mt-1 text-sm text-danger">Informe a taxa Selic.</p>
+            }
+          </div>
+          <div>
+            <label for="plan-ipca" class="block text-sm font-medium text-neutral-700 mb-1">Expectativa IPCA (% a.a.)</label>
+            <input id="plan-ipca" type="number" formControlName="ipcaRate" step="0.01" min="0"
+                   class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                   placeholder="Ex.: 4,5">
+            @if (form.get('ipcaRate')?.invalid && form.get('ipcaRate')?.touched) {
+              <p class="mt-1 text-sm text-danger">Informe a taxa IPCA.</p>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    <div class="flex gap-3 pt-2">
+      <button type="button"
+              (click)="onClose()"
+              class="flex-1 rounded-lg border border-neutral-300 px-4 py-2 text-neutral-700 hover:bg-neutral-50">
+        Cancelar
+      </button>
+      <button type="submit"
+              class="flex-1 rounded-lg bg-primary px-4 py-2 text-white hover:opacity-90 disabled:opacity-50"
+              [disabled]="isSubmitDisabled()">
+        Cadastrar
+      </button>
+    </div>
+  </form>
+</app-modal>

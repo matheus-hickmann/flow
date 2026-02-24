@@ -1,0 +1,27 @@
+<app-header />
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <router-outlet />
+</main>
+
+<app-fab-menu
+  [isOpen]="isFabOpen()"
+  [options]="fabOptions"
+  [ariaLabelToggle]="ariaLabelFabToggle"
+  (openChange)="toggleFab()"
+  (optionSelect)="onFabOptionSelect($event)" />
+
+@if (openModal() === 'expense') {
+  <app-expense-entry-modal
+    (submitted)="onExpenseSubmitted($event)"
+    (closed)="closeModal()" />
+}
+@if (openModal() === 'income') {
+  <app-income-entry-modal
+    (submitted)="onIncomeSubmitted($event)"
+    (closed)="closeModal()" />
+}
+@if (openModal() === 'planning') {
+  <app-planning-entry-modal
+    (submitted)="onPlanningSubmitted($event)"
+    (closed)="closeModal()" />
+}
