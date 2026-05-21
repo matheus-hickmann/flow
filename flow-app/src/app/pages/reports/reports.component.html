@@ -1,1 +1,71 @@
-<p class="text-neutral-600">Relatórios — em breve.</p>
+<div class="space-y-6">
+  <h1 class="text-2xl font-bold text-neutral-800 dark:text-neutral-100">Relatórios</h1>
+
+  <!-- Filters -->
+  <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 flex flex-wrap gap-4 items-end">
+    <div>
+      <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">De</label>
+      <input type="month" [(ngModel)]="fromMonth"
+             class="rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-800 dark:text-neutral-100 focus:border-primary focus:ring-1 focus:ring-primary">
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">Até</label>
+      <input type="month" [(ngModel)]="toMonth"
+             class="rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-800 dark:text-neutral-100 focus:border-primary focus:ring-1 focus:ring-primary">
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">Tipo</label>
+      <select [(ngModel)]="type"
+              class="rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-800 dark:text-neutral-100 focus:border-primary focus:ring-1 focus:ring-primary">
+        <option value="expense">Despesas</option>
+        <option value="income">Receitas</option>
+        <option value="all">Todos</option>
+      </select>
+    </div>
+    <button type="button" (click)="load()" [disabled]="loading()"
+            class="rounded-lg bg-primary px-4 py-2 text-sm text-white hover:opacity-90 disabled:opacity-50">
+      {{ loading() ? 'Carregando…' : 'Atualizar' }}
+    </button>
+  </div>
+
+  @if (error()) {
+    <p class="text-sm text-danger">{{ error() }}</p>
+  }
+
+  <!-- Category filter chips -->
+  @if (allCategories().length > 0) {
+    <div class="flex flex-wrap gap-2">
+      @for (cat of allCategories(); track cat) {
+        <button type="button"
+                (click)="toggleCategory(cat)"
+                [class.bg-primary]="selectedCategories().has(cat)"
+                [class.text-white]="selectedCategories().has(cat)"
+                [class.bg-neutral-100]="!selectedCategories().has(cat)"
+                [class.dark:bg-neutral-800]="!selectedCategories().has(cat)"
+                [class.text-neutral-700]="!selectedCategories().has(cat)"
+                [class.dark:text-neutral-300]="!selectedCategories().has(cat)"
+                class="px-3 py-1 rounded-full text-xs font-medium transition-colors border border-transparent">
+          {{ cat }}
+        </button>
+      }
+    </div>
+    <p class="text-xs text-neutral-400 dark:text-neutral-500">
+      {{ selectedCategories().size === 0 ? 'Exibindo todas as categorias.' : selectedCategories().size + ' categoria(s) selecionada(s).' }}
+      Clique para filtrar.
+    </p>
+  }
+
+  <!-- Chart -->
+  @if (!loading() && months().length > 0) {
+    <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4">
+      <div style="position: relative; height: 360px;">
+        <canvas #chartCanvas></canvas>
+      </div>
+    </div>
+  } @else if (!loading() && months().length === 0) {
+    <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-8 text-center">
+      <p class="text-neutral-500 dark:text-neutral-400">Nenhum dado para o período selecionado.</p>
+      <p class="text-sm text-neutral-400 dark:text-neutral-500 mt-1">Selecione um período e clique em Atualizar.</p>
+    </div>
+  }
+</div>

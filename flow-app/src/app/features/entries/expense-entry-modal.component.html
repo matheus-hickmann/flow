@@ -1,29 +1,29 @@
 <app-modal [title]="'Nova Despesa'" (closed)="onClose()">
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
     <div>
-      <label for="exp-desc" class="block text-sm font-medium text-neutral-700 mb-1">Descrição</label>
+      <label for="exp-desc" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Descrição</label>
       <input id="exp-desc" type="text" formControlName="description"
-             class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+             class="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-neutral-800 dark:text-neutral-100 focus:border-primary focus:ring-1 focus:ring-primary"
              placeholder="Ex.: Supermercado">
       @if (form.get('description')?.invalid && form.get('description')?.touched) {
         <p class="mt-1 text-sm text-danger">Descrição é obrigatória.</p>
       }
     </div>
     <div>
-      <label for="exp-value" class="block text-sm font-medium text-neutral-700 mb-1">Valor (R$)</label>
+      <label for="exp-value" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Valor (R$)</label>
       <input id="exp-value" type="number" formControlName="value" step="0.01" min="0"
-             class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+             class="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-neutral-800 dark:text-neutral-100 focus:border-primary focus:ring-1 focus:ring-primary"
              placeholder="0,00">
       @if (form.get('value')?.invalid && form.get('value')?.touched) {
         <p class="mt-1 text-sm text-danger">Informe um valor positivo.</p>
       }
     </div>
     <div>
-      <label for="exp-category" class="block text-sm font-medium text-neutral-700 mb-1">Categoria</label>
+      <label for="exp-category" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Categoria</label>
       <select id="exp-category" formControlName="category"
-              class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary">
+              class="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-neutral-800 dark:text-neutral-100 focus:border-primary focus:ring-1 focus:ring-primary">
         <option value="">Selecione</option>
-        @for (cat of categories; track cat) {
+        @for (cat of categories(); track cat) {
           <option [value]="cat">{{ cat }}</option>
         }
       </select>
@@ -32,9 +32,9 @@
       }
     </div>
     <div>
-      <label for="exp-account" class="block text-sm font-medium text-neutral-700 mb-1">Conta</label>
+      <label for="exp-account" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Conta</label>
       <select id="exp-account" formControlName="account"
-              class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary">
+              class="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-neutral-800 dark:text-neutral-100 focus:border-primary focus:ring-1 focus:ring-primary">
         <option value="">Selecione</option>
         @for (acc of accounts; track acc) {
           <option [value]="acc">{{ acc }}</option>
@@ -45,14 +45,24 @@
       }
     </div>
     <div>
-      <label for="exp-date" class="block text-sm font-medium text-neutral-700 mb-1">Data</label>
+      <label for="exp-budget" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Planejamento</label>
+      <select id="exp-budget" formControlName="budgetLimitId"
+              class="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-neutral-800 dark:text-neutral-100 focus:border-primary focus:ring-1 focus:ring-primary">
+        <option value="">Não planejado</option>
+        @for (budget of budgetsInput(); track budget.id) {
+          <option [value]="budget.id">{{ budget.category }} — limite {{ budget.limitValue | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label for="exp-date" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Data</label>
       <input id="exp-date" type="date" formControlName="date"
-             class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary">
+             class="w-full rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-neutral-800 dark:text-neutral-100 focus:border-primary focus:ring-1 focus:ring-primary">
     </div>
     <div class="flex gap-3 pt-2">
       <button type="button"
               (click)="onClose()"
-              class="flex-1 rounded-lg border border-neutral-300 px-4 py-2 text-neutral-700 hover:bg-neutral-50">
+              class="flex-1 rounded-lg border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800">
         Cancelar
       </button>
       <button type="submit"

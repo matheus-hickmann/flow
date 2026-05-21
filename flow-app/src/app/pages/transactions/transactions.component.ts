@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 
 import { ARIA_LABELS, MONTH_LABELS } from '../../core/constants/app.constants';
 import {
@@ -7,7 +7,9 @@ import {
   TRANSACTION_CATEGORIES,
   TRANSACTIONS_PAGE_SIZE,
 } from '../../core/constants/transactions-data.const';
-import type { Transaction } from '../../core/models/transaction.model';
+import type { Account, Transaction } from '../../core';
+import { AccountService, ENVIRONMENT, TransactionService } from '../../core';
+import { mapTransactionListItemsToTransactions } from '../../core/utils/transaction-mapper';
 import { CurrencyBrlPipe, DropdownComponent } from '../../shared';
 
 @Component({
@@ -16,11 +18,24 @@ import { CurrencyBrlPipe, DropdownComponent } from '../../shared';
   imports: [CurrencyBrlPipe, DropdownComponent],
   templateUrl: './transactions.component.html',
 })
-export class TransactionsComponent {
+export class TransactionsComponent implements OnInit {
   protected readonly ariaLabelMonthPrevious = ARIA_LABELS.MONTH_PREVIOUS;
   protected readonly ariaLabelMonthNext = ARIA_LABELS.MONTH_NEXT;
   protected readonly categoriesList = [...TRANSACTION_CATEGORIES];
-  protected readonly accountsList = [...TRANSACTION_ACCOUNTS];
+
+  private readonly accountService = inject(AccountService);
+  private readonly transactionService = inject(TransactionService);
+  private readonly env = inject(ENVIRONMENT);
+
+  private readonly accountsSignal = signal<Account[]>([]);
+  private readonly transactionsSignal = signal<Transaction[]>([]);
+  private readonly loadingSignal = signal(false);
+
+  protected readonly accountsList = computed(() => {
+    const accounts = this.accountsSignal();
+    if (accounts.length > 0) return accounts.map((a) => a.name);
+    return [...TRANSACTION_ACCOUNTS];
+  });
 
   private readonly currentDateSignal = signal<{ year: number; month: number }>(this.getInitialDate());
   private readonly filterDescriptionSignal = signal('');
@@ -42,14 +57,16 @@ export class TransactionsComponent {
   readonly filterAccount = this.filterAccountSignal.asReadonly();
   readonly filterType = this.filterTypeSignal.asReadonly();
   readonly currentPage = this.currentPageSignal.asReadonly();
+  readonly loading = this.loadingSignal.asReadonly();
 
   readonly filteredByMonth = computed(() => {
+    const transactions = this.transactionsSignal();
     const monthKey = this.monthKey();
     const desc = this.filterDescriptionSignal().toLowerCase().trim();
     const cat = this.filterCategorySignal().trim();
     const acc = this.filterAccountSignal().trim();
     const type = this.filterTypeSignal();
-    return MOCK_TRANSACTIONS.filter((tx) => {
+    return transactions.filter((tx) => {
       if (tx.date.slice(0, 7) !== monthKey) return false;
       if (desc && !tx.description.toLowerCase().includes(desc)) return false;
       if (cat && tx.category !== cat) return false;
@@ -82,6 +99,44 @@ export class TransactionsComponent {
     const start = this.currentPageSignal() * TRANSACTIONS_PAGE_SIZE;
     return list.slice(start, start + TRANSACTIONS_PAGE_SIZE);
   });
+
+  ngOnInit(): void {
+    if (!this.env.apiUrl) {
+      this.transactionsSignal.set([...MOCK_TRANSACTIONS]);
+      return;
+    }
+    this.loadingSignal.set(true);
+    this.accountService.list().subscribe({
+      next: (accounts) => {
+        this.accountsSignal.set(accounts);
+        this.loadTransactionList(accounts);
+      },
+      error: () => {
+        this.transactionsSignal.set([...MOCK_TRANSACTIONS]);
+        this.loadingSignal.set(false);
+      },
+    });
+    this.transactionService.refresh$.subscribe(() => this.refreshTransactions());
+  }
+
+  private loadTransactionList(accounts: Account[]): void {
+    this.transactionService.list(200).subscribe({
+      next: (items) => {
+        this.transactionsSignal.set(mapTransactionListItemsToTransactions(items, accounts));
+        this.loadingSignal.set(false);
+      },
+      error: () => {
+        this.transactionsSignal.set([...MOCK_TRANSACTIONS]);
+        this.loadingSignal.set(false);
+      },
+    });
+  }
+
+  refreshTransactions(): void {
+    const accounts = this.accountsSignal();
+    if (!this.env.apiUrl || accounts.length === 0) return;
+    this.loadTransactionList(accounts);
+  }
 
   previousMonth(): void {
     this.currentDateSignal.update(({ year, month }) => {

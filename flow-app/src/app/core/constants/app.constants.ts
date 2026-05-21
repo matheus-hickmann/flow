@@ -3,6 +3,7 @@ export const ROUTES = {
   TRANSACTIONS: 'transacoes',
   ACCOUNTS: 'contas',
   REPORTS: 'relatorios',
+  CATEGORIES: 'categorias',
 } as const;
 
 export const ARIA_LABELS = {
@@ -23,5 +24,6 @@ export const MONTH_LABELS = [
 export const FAB_OPTIONS = [
   { id: 'expense', label: 'Despesa' },
   { id: 'income', label: 'Receita' },
+  { id: 'transfer', label: 'Transferência' },
   { id: 'planning', label: 'Planejamento' },
 ] as const;

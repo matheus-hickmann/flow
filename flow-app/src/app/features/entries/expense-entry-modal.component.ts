@@ -1,28 +1,55 @@
-import { Component, inject, output } from '@angular/core';
+import { Component, input, inject, output, OnInit, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { CurrencyPipe } from '@angular/common';
 
 import { ModalComponent } from '../../shared';
+import type { BudgetResponse } from '../../core/services/planning.service';
+import { CategoryService, DEFAULT_EXPENSE_CATEGORIES } from '../../core/services/category.service';
 
 @Component({
   selector: 'app-expense-entry-modal',
   standalone: true,
-  imports: [ReactiveFormsModule, ModalComponent],
+  imports: [ReactiveFormsModule, ModalComponent, CurrencyPipe],
   templateUrl: './expense-entry-modal.component.html',
 })
-export class ExpenseEntryModalComponent {
-  readonly submitted = output<{ description: string; value: number; category: string; account: string; date: string | null }>();
+export class ExpenseEntryModalComponent implements OnInit {
+  readonly submitted = output<{
+    description: string;
+    value: number;
+    category: string;
+    account: string;
+    date: string | null;
+    budgetLimitId?: string;
+  }>();
   readonly closed = output<void>();
 
+  readonly accountsInput = input<string[]>([]);
+  readonly budgetsInput = input<BudgetResponse[]>([]);
+
   private readonly fb = inject(FormBuilder);
+  private readonly categoryService = inject(CategoryService);
+
+  readonly categories = signal(DEFAULT_EXPENSE_CATEGORIES.map((c) => c.name));
+
   form: FormGroup = this.fb.group({
     description: ['', [Validators.required, Validators.maxLength(500)]],
     value: [null as number | null, [Validators.required, Validators.min(0.01)]],
     category: ['', Validators.required],
     account: ['', Validators.required],
     date: [this.todayString()],
+    budgetLimitId: [''],
   });
-  protected readonly categories = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Vestuário', 'Outros'];
-  protected readonly accounts = ['Itaú', 'Santander', 'Nubank', 'Dinheiro'];
+
+  protected get accounts(): string[] {
+    const fromInput = this.accountsInput();
+    return fromInput.length > 0 ? fromInput : ['Conta'];
+  }
+
+  ngOnInit(): void {
+    this.categoryService.getCategories().subscribe({
+      next: (cats) => this.categories.set(cats.expense.map((c) => c.name)),
+    });
+  }
 
   onClose(): void {
     this.closed.emit();
@@ -37,12 +64,12 @@ export class ExpenseEntryModalComponent {
       category: v.category,
       account: v.account,
       date: v.date ?? null,
+      budgetLimitId: v.budgetLimitId || undefined,
     });
     this.closed.emit();
   }
 
   private todayString(): string {
-    const t = new Date();
-    return t.toISOString().slice(0, 10);
+    return new Date().toISOString().slice(0, 10);
   }
 }

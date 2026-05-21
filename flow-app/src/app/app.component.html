@@ -1,27 +1,44 @@
-<app-header />
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+@if (authService.isLoggedIn() || !authService.useAuth()) {
+  <app-header />
+
+  <div class="lg:ml-64 min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950">
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20 lg:pt-8">
+      <router-outlet />
+    </main>
+  </div>
+
+  <app-fab-menu
+    [isOpen]="isFabOpen()"
+    [options]="fabOptions"
+    [ariaLabelToggle]="ariaLabelFabToggle"
+    (openChange)="toggleFab()"
+    (optionSelect)="onFabOptionSelect($event)" />
+
+  @if (openModal() === 'expense') {
+    <app-expense-entry-modal
+      [accountsInput]="accountNamesForModals()"
+      [budgetsInput]="budgetsForModals()"
+      (submitted)="onExpenseSubmitted($event)"
+      (closed)="closeModal()" />
+  }
+  @if (openModal() === 'income') {
+    <app-income-entry-modal
+      [accountsInput]="accountNamesForModals()"
+      [budgetsInput]="budgetsForModals()"
+      (submitted)="onIncomeSubmitted($event)"
+      (closed)="closeModal()" />
+  }
+  @if (openModal() === 'planning') {
+    <app-planning-entry-modal
+      (submitted)="onPlanningSubmitted($event)"
+      (closed)="closeModal()" />
+  }
+  @if (openModal() === 'transfer') {
+    <app-transfer-entry-modal
+      [accountsInput]="accountsForTransfer()"
+      (submitted)="onTransferSubmitted($event)"
+      (closed)="closeModal()" />
+  }
+} @else {
   <router-outlet />
-</main>
-
-<app-fab-menu
-  [isOpen]="isFabOpen()"
-  [options]="fabOptions"
-  [ariaLabelToggle]="ariaLabelFabToggle"
-  (openChange)="toggleFab()"
-  (optionSelect)="onFabOptionSelect($event)" />
-
-@if (openModal() === 'expense') {
-  <app-expense-entry-modal
-    (submitted)="onExpenseSubmitted($event)"
-    (closed)="closeModal()" />
-}
-@if (openModal() === 'income') {
-  <app-income-entry-modal
-    (submitted)="onIncomeSubmitted($event)"
-    (closed)="closeModal()" />
-}
-@if (openModal() === 'planning') {
-  <app-planning-entry-modal
-    (submitted)="onPlanningSubmitted($event)"
-    (closed)="closeModal()" />
 }

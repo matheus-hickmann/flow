@@ -1,5 +1,5 @@
-import { Component, computed, signal } from '@angular/core';
-import { OnInit } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { animate, animation, state, style, transition, trigger } from '@angular/animations';
 
 import { ARIA_LABELS, MONTH_LABELS } from '../../core/constants/app.constants';
@@ -9,6 +9,7 @@ import {
   INITIAL_LATEST_ENTRIES,
   INITIAL_SUMMARY_CARDS,
 } from '../../core/constants/dashboard-data.const';
+import { DashboardService } from '../../core';
 import type {
   BudgetVsActualItem,
   CategorySlice,
@@ -50,13 +51,15 @@ const budgetChartSlideAnimation = animation([
   ],
   templateUrl: './dashboard.component.html',
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   protected readonly budgetBarColor = BUDGET_BAR_COLOR;
   protected readonly actualBarColor = ACTUAL_BAR_COLOR;
   protected readonly ariaLabelMonthPrevious = ARIA_LABELS.MONTH_PREVIOUS;
   protected readonly ariaLabelMonthNext = ARIA_LABELS.MONTH_NEXT;
 
+  private readonly dashboardService = inject(DashboardService);
   private readonly currentDateSignal = signal<{ year: number; month: number }>(DashboardComponent.getInitialDate());
+  private refreshSub: Subscription | null = null;
   private readonly slideDirectionSignal = signal<number>(0);
   private readonly chartReadySignal = signal(false);
   private chartFillTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -109,14 +112,19 @@ export class DashboardComponent implements OnInit {
     const items = this.budgetVsActualSignal();
     let max = 0;
     for (const item of items) {
-      if (item.budgeted > max) max = item.budgeted;
+      if (item.planned > max) max = item.planned;
       if (item.actual > max) max = item.actual;
     }
     return max || 1;
   });
 
+  readonly hasCategories = computed(() => this.categorySlicesSignal().length > 0);
+  readonly hasBudgetItems = computed(() => this.budgetVsActualSignal().length > 0);
+  readonly hasEntries = computed(() => this.latestEntriesSignal().length > 0);
+
   readonly donutBackground = computed(() => {
     const slices = this.categorySlicesSignal();
+    if (slices.length === 0) return '#e5e7eb';
     let acc = 0;
     const parts = slices.map((s) => {
       const start = acc;
@@ -142,8 +150,59 @@ export class DashboardComponent implements OnInit {
       Math.min(this.budgetChartTotalPages() - 1, p + 1));
   }
 
+  private readonly DONUT_COLORS = ['#1e3a5f', '#f97316', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#cbd5e1'];
+
   ngOnInit(): void {
     this.scheduleChartFill();
+    this.loadDashboardData();
+    this.refreshSub = this.dashboardService.refresh$.subscribe(() => this.loadDashboardData());
+  }
+
+  ngOnDestroy(): void {
+    this.refreshSub?.unsubscribe();
+  }
+
+  private loadDashboardData(): void {
+    const { year, month } = this.currentDateSignal();
+    this.dashboardService.getSummary().subscribe((s) => {
+      const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+      const cards = [...this.summaryCardsSignal()];
+      cards[0] = { ...cards[0], value: fmt(s.totalBalance) };
+      cards[3] = { ...cards[3], value: fmt(s.investmentBalance) };
+      this.summaryCardsSignal.set(cards);
+    });
+    this.dashboardService.getMonthlySummary(year, month).subscribe((m) => {
+      if (!m) return;
+      const income = this.toNum(m.monthlyIncome);
+      const expense = this.toNum(m.monthlyExpense);
+      const cards = [...this.summaryCardsSignal()];
+      cards[1] = { ...cards[1], value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(income) };
+      cards[2] = { ...cards[2], value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(expense) };
+      this.summaryCardsSignal.set(cards);
+      const breakdown = m.categoryBreakdown ?? [];
+      const total = breakdown.reduce((s, c) => s + this.toNum(c.amount), 0);
+      const slices = total > 0
+        ? breakdown.map((c, i) => ({
+            name: c.category,
+            percent: Math.round((this.toNum(c.amount) / total) * 100),
+            color: this.DONUT_COLORS[i % this.DONUT_COLORS.length],
+          }))
+        : [...INITIAL_CATEGORY_SLICES];
+      this.categorySlicesSignal.set(slices);
+    });
+    this.dashboardService.getLatestEntries(10).subscribe((entries) => {
+      this.latestEntriesSignal.set(entries.length > 0 ? entries : [...INITIAL_LATEST_ENTRIES]);
+    });
+    this.dashboardService.getPlannedVsActual(year, month).subscribe((items) => {
+      this.budgetVsActualSignal.set(items);
+    });
+  }
+
+  private toNum(val: number | string | undefined): number {
+    if (val == null) return 0;
+    if (typeof val === 'number') return val;
+    const s = String(val).trim().replace(/\./g, '').replace(',', '.');
+    return Number(s) || 0;
   }
 
   previousMonth(): void {
@@ -159,6 +218,7 @@ export class DashboardComponent implements OnInit {
       return { year, month: month - 1 };
     });
     this.scheduleChartFill();
+    this.loadDashboardData();
   }
 
   nextMonth(): void {
@@ -174,6 +234,7 @@ export class DashboardComponent implements OnInit {
       return { year, month: month + 1 };
     });
     this.scheduleChartFill();
+    this.loadDashboardData();
   }
 
   private scheduleChartFill(): void {

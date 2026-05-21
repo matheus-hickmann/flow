@@ -1,0 +1,2 @@
+# Scripts: sempre LF para evitar "command not found" no Linux/macOS
+*.sh text eol=lf

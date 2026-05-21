@@ -2,15 +2,15 @@
      role="dialog"
      aria-modal="true"
      (click)="onOverlayClick($event)">
-  <div class="absolute inset-0 modal-overlay bg-neutral-900/50"
+  <div class="absolute inset-0 modal-overlay bg-neutral-900/60 dark:bg-black/70"
        aria-hidden="true"></div>
-  <div class="relative bg-white rounded-xl shadow-xl max-h-[90vh] w-full max-w-lg flex flex-col"
+  <div class="relative bg-white dark:bg-neutral-900 rounded-xl shadow-xl max-h-[90vh] w-full max-w-lg flex flex-col border border-neutral-200 dark:border-neutral-700"
        (click)="$event.stopPropagation()">
-    <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-200 shrink-0">
-      <h2 class="text-lg font-semibold text-neutral-800">{{ title() }}</h2>
+    <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 shrink-0">
+      <h2 class="text-lg font-semibold text-neutral-800 dark:text-neutral-100">{{ title() }}</h2>
       <button type="button"
               (click)="close()"
-              class="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
+              class="p-2 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-700 dark:hover:text-white transition-colors"
               aria-label="Fechar">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />

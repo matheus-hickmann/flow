@@ -4,3 +4,7 @@ export {
   PlanningEntryModalComponent,
   type PlanningSubmitPayload,
 } from './planning-entry-modal.component';
+export {
+  TransferEntryModalComponent,
+  type TransferSubmitPayload,
+} from './transfer-entry-modal.component';

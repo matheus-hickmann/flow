@@ -1,8 +1,0 @@
-# Profile ativado ao rodar como GraalVM Native Image
-spring:
-  jmx:
-    enabled: false
-
-logging:
-  level:
-    root: INFO

@@ -1,7 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 
-export type FabOptionId = 'expense' | 'income' | 'planning';
+export type FabOptionId = 'expense' | 'income' | 'planning' | 'transfer';
 
 export interface FabOption {
   readonly id: FabOptionId;

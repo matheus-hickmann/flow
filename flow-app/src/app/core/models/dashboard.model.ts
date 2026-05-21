@@ -13,7 +13,7 @@ export interface CategorySlice {
 
 export interface BudgetVsActualItem {
   readonly category: string;
-  readonly budgeted: number;
+  readonly planned: number;
   readonly actual: number;
 }
 

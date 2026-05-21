@@ -1,0 +1,67 @@
+<app-modal title="Transferência entre contas" (closed)="onClose()">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+    <div>
+      <label for="tr-desc" class="block text-sm font-medium text-neutral-700 mb-1">Descrição</label>
+      <input id="tr-desc" type="text" formControlName="description"
+             class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+             placeholder="Ex.: Transferência para investimento">
+      @if (form.get('description')?.invalid && form.get('description')?.touched) {
+        <p class="mt-1 text-sm text-danger">Descrição é obrigatória.</p>
+      }
+    </div>
+    <div>
+      <label for="tr-from" class="block text-sm font-medium text-neutral-700 mb-1">Conta de origem</label>
+      <select id="tr-from" formControlName="fromAccountId"
+              class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary">
+        <option value="">Selecione</option>
+        @for (acc of accounts; track acc.id) {
+          <option [value]="acc.id">{{ acc.name }}{{ acc.investment ? ' ★' : '' }}</option>
+        }
+      </select>
+      @if (form.get('fromAccountId')?.invalid && form.get('fromAccountId')?.touched) {
+        <p class="mt-1 text-sm text-danger">Selecione a conta de origem.</p>
+      }
+    </div>
+    <div>
+      <label for="tr-to" class="block text-sm font-medium text-neutral-700 mb-1">Conta de destino</label>
+      <select id="tr-to" formControlName="toAccountId"
+              class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary">
+        <option value="">Selecione</option>
+        @for (acc of accounts; track acc.id) {
+          <option [value]="acc.id">{{ acc.name }}{{ acc.investment ? ' ★' : '' }}</option>
+        }
+      </select>
+      @if (form.get('toAccountId')?.invalid && form.get('toAccountId')?.touched) {
+        <p class="mt-1 text-sm text-danger">Selecione a conta de destino.</p>
+      }
+      @if (!isDifferentAccounts) {
+        <p class="mt-1 text-sm text-danger">Origem e destino devem ser contas diferentes.</p>
+      }
+    </div>
+    <div>
+      <label for="tr-amount" class="block text-sm font-medium text-neutral-700 mb-1">Valor (R$)</label>
+      <input id="tr-amount" type="number" formControlName="amount" step="0.01" min="0"
+             class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+             placeholder="0,00">
+      @if (form.get('amount')?.invalid && form.get('amount')?.touched) {
+        <p class="mt-1 text-sm text-danger">Informe um valor positivo.</p>
+      }
+    </div>
+    <div>
+      <label for="tr-date" class="block text-sm font-medium text-neutral-700 mb-1">Data</label>
+      <input id="tr-date" type="date" formControlName="date"
+             class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary">
+    </div>
+    <div class="flex gap-3 pt-2">
+      <button type="button" (click)="onClose()"
+              class="flex-1 rounded-lg border border-neutral-300 px-4 py-2 text-neutral-700 hover:bg-neutral-50">
+        Cancelar
+      </button>
+      <button type="submit"
+              class="flex-1 rounded-lg bg-primary px-4 py-2 text-white hover:opacity-90 disabled:opacity-50"
+              [disabled]="form.invalid || !isDifferentAccounts">
+        Transferir
+      </button>
+    </div>
+  </form>
+</app-modal>

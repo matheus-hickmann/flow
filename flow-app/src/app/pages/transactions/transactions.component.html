@@ -23,11 +23,11 @@
     <h2 class="text-lg font-semibold text-neutral-800 mb-6">Totais do mês</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div class="rounded-xl p-4 shadow-sm bg-success-light">
-        <p class="text-sm font-medium text-neutral-600">Receitas</p>
+        <p class="text-sm font-medium text-neutral-600">Entradas</p>
         <p class="text-xl font-bold text-neutral-900">{{ totalIncome() | currencyBrl }}</p>
       </div>
       <div class="rounded-xl p-4 shadow-sm bg-danger-light">
-        <p class="text-sm font-medium text-neutral-600">Despesas</p>
+        <p class="text-sm font-medium text-neutral-600">Saídas</p>
         <p class="text-xl font-bold text-neutral-900">{{ totalExpense() | currencyBrl }}</p>
       </div>
       <div class="rounded-xl p-4 shadow-sm bg-secondary-light">
@@ -64,7 +64,7 @@
           <label for="filter-acc" class="block text-sm font-medium text-neutral-700 mb-1">Conta</label>
           <app-dropdown id="filter-acc" [value]="filterAccount()" (valueChange)="setFilterAccountValue($event)" [ariaLabel]="'Conta'">
             <option value="">Todas</option>
-            @for (a of accountsList; track a) {
+            @for (a of accountsList(); track a) {
               <option [value]="a">{{ a }}</option>
             }
           </app-dropdown>

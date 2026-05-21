@@ -1,6 +1,6 @@
-# LedgerApp (flow-app)
+# Future Flow (flow-app)
 
-SPA do LedgerApp em Angular com Tailwind CSS.
+SPA do Future Flow em Angular com Tailwind CSS.
 
 ## Pré-requisitos
 
@@ -16,6 +16,8 @@ npm start
 ```
 
 Acesse `http://localhost:4200`.
+
+Para rodar o app com a API (ledger) local, use o ambiente descrito em **[../docs/LOCAL_SETUP.md](../docs/LOCAL_SETUP.md)** (DynamoDB Local + ledger-service com perfil `local`). O `apiUrl` em `src/environments/environment.ts` já aponta para `http://localhost:8081`.
 
 ## Estrutura do projeto (Angular best practices)
 

@@ -1,6 +1,10 @@
 export const environment = {
   production: true,
-  appName: 'LedgerApp',
+  appName: 'Future Flow',
   defaultUserName: 'João Silva',
   apiUrl: '',
+  authApiUrl: '',
+  planningApiUrl: '',
+  dashboardApiUrl: '',
+  accountApiUrl: '',
 };

@@ -7,47 +7,18 @@ const TREND_UP_ICON =
 const TREND_DOWN_ICON =
   '<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="#ef4444"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" /></svg>';
 
+const INVEST_ICON =
+  '<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="#f59e0b"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
+
 export const INITIAL_SUMMARY_CARDS: readonly SummaryCard[] = [
-  { label: 'Saldo Total', value: 'R$ 12.450,00', bgClass: 'bg-secondary-light', icon: SHIELD_ICON },
-  { label: 'Receitas (Mês)', value: 'R$ 5.200,00', bgClass: 'bg-success-light', icon: TREND_UP_ICON },
-  { label: 'Despesas (Mês)', value: 'R$ 2.150,00', bgClass: 'bg-danger-light', icon: TREND_DOWN_ICON },
+  { label: 'Saldo Total', value: 'R$ 0,00', bgClass: 'bg-secondary-light', icon: SHIELD_ICON },
+  { label: 'Entradas (Mês)', value: 'R$ 0,00', bgClass: 'bg-success-light', icon: TREND_UP_ICON },
+  { label: 'Saídas (Mês)', value: 'R$ 0,00', bgClass: 'bg-danger-light', icon: TREND_DOWN_ICON },
+  { label: 'Carteira de Investimentos', value: 'R$ 0,00', bgClass: 'bg-gold-light', icon: INVEST_ICON },
 ];
 
-export const INITIAL_CATEGORY_SLICES: readonly CategorySlice[] = [
-  { name: 'Alimentação', percent: 30, color: '#1e3a5f' },
-  { name: 'Moradia', percent: 50, color: '#f97316' },
-  { name: 'Transporte', percent: 10, color: '#22c55e' },
-  { name: 'Outros', percent: 10, color: '#cbd5e1' },
-];
+export const INITIAL_CATEGORY_SLICES: readonly CategorySlice[] = [];
 
-export const INITIAL_BUDGET_VS_ACTUAL: readonly BudgetVsActualItem[] = [
-  { category: 'Alimentação', budgeted: 1500, actual: 1650 },
-  { category: 'Moradia', budgeted: 2500, actual: 3200 },
-  { category: 'Transporte', budgeted: 800, actual: 950 },
-  { category: 'Saúde', budgeted: 600, actual: 420 },
-  { category: 'Educação', budgeted: 400, actual: 400 },
-  { category: 'Lazer', budgeted: 500, actual: 680 },
-  { category: 'Vestuário', budgeted: 300, actual: 250 },
-  { category: 'Outros', budgeted: 400, actual: 520 },
-];
+export const INITIAL_BUDGET_VS_ACTUAL: readonly BudgetVsActualItem[] = [];
 
-export const INITIAL_LATEST_ENTRIES: readonly LatestEntry[] = [
-  {
-    id: '1',
-    date: '10/02',
-    description: 'Supermercado Extra',
-    category: 'Alimentação',
-    account: 'Itaú',
-    value: '- R$ 350,00',
-    isIncome: false,
-  },
-  {
-    id: '2',
-    date: '09/02',
-    description: 'Salário Mensal',
-    category: 'Renda',
-    account: 'Santander',
-    value: '+ R$ 5.000,00',
-    isIncome: true,
-  },
-];
+export const INITIAL_LATEST_ENTRIES: readonly LatestEntry[] = [];

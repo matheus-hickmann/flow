@@ -12,6 +12,8 @@ const themeColors = {
   'success-light': '#dcfce7',
   danger: '#ef4444',
   'danger-light': '#ffe4e6',
+  gold: '#f59e0b',
+  'gold-light': '#fef3c7',
 };
 
 const neutral = {
@@ -29,6 +31,7 @@ const neutral = {
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     "./src/**/*.{html,ts}",
     "./projects/dashboard/src/**/*.{html,ts}",
