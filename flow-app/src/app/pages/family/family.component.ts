@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { NgClass } from '@angular/common';
+import { NgClass, SlicePipe } from '@angular/common';
 
 import { FamilyService } from '../../core/services/family.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -9,7 +9,7 @@ import { CurrencyBrlPipe } from '../../shared';
 @Component({
   selector: 'app-family',
   standalone: true,
-  imports: [NgClass, CurrencyBrlPipe],
+  imports: [NgClass, SlicePipe, CurrencyBrlPipe],
   templateUrl: './family.component.html',
 })
 export class FamilyComponent implements OnInit {

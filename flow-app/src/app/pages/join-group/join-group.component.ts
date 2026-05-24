@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NgClass } from '@angular/common';
+import { NgClass, SlicePipe } from '@angular/common';
 
 import { FamilyService } from '../../core/services/family.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -9,7 +9,7 @@ import type { InvitePreview } from '../../core/models/family.model';
 @Component({
   selector: 'app-join-group',
   standalone: true,
-  imports: [NgClass],
+  imports: [NgClass, SlicePipe],
   templateUrl: './join-group.component.html',
 })
 export class JoinGroupComponent implements OnInit {
