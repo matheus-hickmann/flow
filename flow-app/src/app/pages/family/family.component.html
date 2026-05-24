@@ -1,0 +1,208 @@
+<div class="p-6 max-w-5xl mx-auto space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Família</h1>
+    <button
+      (click)="openCreateGroup()"
+      class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors">
+      + Novo grupo
+    </button>
+  </div>
+
+  <!-- Loading / error -->
+  @if (loading()) {
+    <div class="text-gray-500 dark:text-gray-400">Carregando...</div>
+  } @else if (error()) {
+    <div class="text-red-600">{{ error() }}</div>
+  } @else if (groups().length === 0) {
+    <div class="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-12 text-center">
+      <p class="text-gray-500 dark:text-gray-400">Você ainda não faz parte de nenhum grupo familiar.</p>
+      <button
+        (click)="openCreateGroup()"
+        class="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+        Criar meu primeiro grupo
+      </button>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+      <!-- Group list sidebar -->
+      <div class="space-y-2">
+        @for (group of groups(); track trackByGroupId($index, group)) {
+          <button
+            (click)="selectGroup(group)"
+            [ngClass]="{
+              'bg-blue-50 border-blue-500 dark:bg-blue-900/20': selectedGroup()?.id === group.id,
+              'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700': selectedGroup()?.id !== group.id
+            }"
+            class="w-full text-left rounded-xl border px-4 py-3 transition-colors hover:border-blue-400">
+            <p class="font-medium text-gray-900 dark:text-white">{{ group.name }}</p>
+          </button>
+        }
+      </div>
+
+      <!-- Group detail -->
+      @if (selectedGroup(); as group) {
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Group header -->
+          <div class="flex items-center justify-between rounded-xl bg-white dark:bg-gray-800 p-4 shadow-sm">
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ group.name }}</h2>
+              <p class="text-xs text-gray-400">Criado em {{ group.createdAt | slice:0:10 }}</p>
+            </div>
+            @if (isOwner()) {
+              <button
+                (click)="deleteGroup(group)"
+                class="text-sm text-red-600 hover:text-red-700">
+                Excluir grupo
+              </button>
+            }
+          </div>
+
+          <!-- Members -->
+          <div class="rounded-xl bg-white dark:bg-gray-800 p-4 shadow-sm space-y-3">
+            <h3 class="font-semibold text-gray-700 dark:text-gray-300">Membros</h3>
+            @for (member of group.members; track trackByUserId($index, member)) {
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 text-sm font-bold">
+                    {{ member.displayName.charAt(0).toUpperCase() }}
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ member.displayName }}</p>
+                    <p class="text-xs text-gray-400">{{ member.role === 'owner' ? 'Dono' : 'Membro' }}</p>
+                  </div>
+                </div>
+                @if (isOwner() && member.userId !== currentUserId()) {
+                  <button
+                    (click)="removeMember(member.userId)"
+                    class="text-xs text-red-500 hover:text-red-600">
+                    Remover
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Invites (owner only) -->
+          @if (isOwner()) {
+            <div class="rounded-xl bg-white dark:bg-gray-800 p-4 shadow-sm space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="font-semibold text-gray-700 dark:text-gray-300">Convites</h3>
+                <button
+                  (click)="openCreateInvite()"
+                  class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                  + Gerar convite
+                </button>
+              </div>
+              @if (pendingInvites().length === 0) {
+                <p class="text-sm text-gray-400">Nenhum convite pendente.</p>
+              } @else {
+                @for (invite of pendingInvites(); track trackByToken($index, invite)) {
+                  <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-700 dark:text-gray-300">{{ invite.inviteeLabel || 'Sem etiqueta' }}</span>
+                    <button
+                      (click)="revokeInvite(invite)"
+                      class="text-red-500 hover:text-red-600 text-xs">
+                      Revogar
+                    </button>
+                  </div>
+                }
+              }
+            </div>
+          }
+
+          <!-- Shared accounts -->
+          @if (sharedAccounts().length > 0) {
+            <div class="rounded-xl bg-white dark:bg-gray-800 p-4 shadow-sm space-y-3">
+              <h3 class="font-semibold text-gray-700 dark:text-gray-300">Contas compartilhadas</h3>
+              @for (acc of sharedAccounts(); track trackByAccountId($index, acc)) {
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="h-3 w-3 rounded-full" [style.background-color]="acc.color"></span>
+                    <div>
+                      <p class="text-sm font-medium text-gray-900 dark:text-white">{{ acc.name }}</p>
+                      <p class="text-xs text-gray-400">{{ acc.ownerName }}</p>
+                    </div>
+                  </div>
+                  <span class="text-sm font-semibold" [ngClass]="acc.balance >= 0 ? 'text-green-600' : 'text-red-600'">
+                    {{ acc.balance | currencyBrl }}
+                  </span>
+                </div>
+              }
+            </div>
+          }
+
+        </div>
+      }
+
+    </div>
+  }
+
+</div>
+
+<!-- Create group modal -->
+@if (showCreateGroup()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div class="w-full max-w-sm rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-xl space-y-4">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Novo grupo familiar</h2>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome do grupo</label>
+        <input
+          type="text"
+          [value]="newGroupName()"
+          (input)="newGroupName.set($any($event.target).value)"
+          placeholder="Ex: Família Silva"
+          class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        @if (createGroupError()) {
+          <p class="mt-1 text-xs text-red-600">{{ createGroupError() }}</p>
+        }
+      </div>
+      <div class="flex gap-3 justify-end">
+        <button (click)="showCreateGroup.set(false)" class="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">Cancelar</button>
+        <button (click)="submitCreateGroup()" class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700">Criar</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Create invite modal -->
+@if (showCreateInvite()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div class="w-full max-w-sm rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-xl space-y-4">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Gerar convite</h2>
+
+      @if (createdInviteLink(); as link) {
+        <div class="space-y-3">
+          <p class="text-sm text-gray-600 dark:text-gray-400">Convite gerado! Copie e compartilhe o link:</p>
+          <div class="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 px-3 py-2">
+            <span class="flex-1 text-xs text-gray-700 dark:text-gray-300 truncate">{{ link }}</span>
+            <button (click)="copyLink(link)" class="text-blue-600 hover:text-blue-700 text-xs font-medium shrink-0">Copiar</button>
+          </div>
+          <div class="flex justify-end">
+            <button (click)="showCreateInvite.set(false)" class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700">Fechar</button>
+          </div>
+        </div>
+      } @else {
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Etiqueta (opcional)</label>
+          <input
+            type="text"
+            [value]="newInviteeLabel()"
+            (input)="newInviteeLabel.set($any($event.target).value)"
+            placeholder="Ex: Ana - esposa"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          @if (createInviteError()) {
+            <p class="mt-1 text-xs text-red-600">{{ createInviteError() }}</p>
+          }
+        </div>
+        <div class="flex gap-3 justify-end">
+          <button (click)="showCreateInvite.set(false)" class="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">Cancelar</button>
+          <button (click)="submitCreateInvite()" class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700">Gerar</button>
+        </div>
+      }
+    </div>
+  </div>
+}

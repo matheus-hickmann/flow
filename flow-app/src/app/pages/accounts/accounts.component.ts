@@ -333,4 +333,13 @@ export class AccountsComponent implements OnInit {
     });
   }
 
+  toggleShared(account: Account): void {
+    const newShared = !account.shared;
+    this.accountService.update(account.id, { shared: newShared }).subscribe({
+      next: (updated) => {
+        this.accounts.update((list) => list.map((a) => (a.id === updated.id ? updated : a)));
+      },
+    });
+  }
+
 }

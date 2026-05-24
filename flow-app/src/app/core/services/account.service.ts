@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of, catchError, map } from 'rxjs';
 
 import { ENVIRONMENT } from '../config';
-import type { Account, CreateAccountPayload, AdjustBalancePayload, RenameAccountPayload } from '../models/account.model';
+import type { Account, CreateAccountPayload, AdjustBalancePayload, RenameAccountPayload, UpdateAccountPayload } from '../models/account.model';
 
 function parseBalance(val: number | string | undefined): number {
   if (val == null) return 0;
@@ -59,6 +59,12 @@ export class AccountService {
     if (!this.env.apiUrl) {
       return of({ id, code: id, name: payload.name, type: 'ASSET', balance: 0, color: '#3b82f6' });
     }
+    return this.http.patch<Account>(`${this.accountsUrl}/${id}`, payload).pipe(
+      map((a) => ({ ...a, balance: parseBalance((a as { balance?: string | number }).balance) })),
+    );
+  }
+
+  update(id: string, payload: UpdateAccountPayload): Observable<Account> {
     return this.http.patch<Account>(`${this.accountsUrl}/${id}`, payload).pipe(
       map((a) => ({ ...a, balance: parseBalance((a as { balance?: string | number }).balance) })),
     );

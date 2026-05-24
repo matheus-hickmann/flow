@@ -38,4 +38,15 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/categories/categories.component').then((m) => m.CategoriesComponent),
   },
+  {
+    path: ROUTES.FAMILY,
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/family/family.component').then((m) => m.FamilyComponent),
+  },
+  {
+    path: 'entrar/:token',
+    loadComponent: () =>
+      import('./pages/join-group/join-group.component').then((m) => m.JoinGroupComponent),
+  },
 ];

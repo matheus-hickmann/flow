@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { AuthService } from '../../core/services/auth.service';
@@ -67,6 +67,7 @@ import { ENVIRONMENT } from '../../core/config';
 export class LoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   protected readonly appName = inject(ENVIRONMENT).appName;
 
   userId = '';
@@ -78,7 +79,10 @@ export class LoginComponent {
     this.errorMessage.set(null);
     this.loading.set(true);
     this.auth.login({ userId: this.userId.trim(), password: this.password }).subscribe({
-      next: () => this.router.navigate(['/']),
+      next: () => {
+        const redirect = this.route.snapshot.queryParamMap.get('redirect');
+        this.router.navigateByUrl(redirect ?? '/');
+      },
       error: (err) => {
         this.loading.set(false);
         const msg = err?.error?.message ?? err?.message ?? 'ID de usuário ou senha inválidos.';

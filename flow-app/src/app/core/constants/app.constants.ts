@@ -4,6 +4,7 @@ export const ROUTES = {
   ACCOUNTS: 'contas',
   REPORTS: 'relatorios',
   CATEGORIES: 'categorias',
+  FAMILY: 'familia',
 } as const;
 
 export const ARIA_LABELS = {
