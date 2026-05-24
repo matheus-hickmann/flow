@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { loadRemoteModule } from '@angular-architects/native-federation';
 
 import { ROUTES } from './core/constants/app.constants';
 import { authGuard } from './core/guards/auth.guard';

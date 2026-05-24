@@ -1,0 +1,70 @@
+# Local full-stack: DynamoDB Local + table init + Go backend + Angular frontend.
+# Bring everything up with: docker compose up
+#
+# The Go backend lives in a sibling repo (../flow-service-go) and is mounted
+# read/write so `air` reloads on file changes.
+
+services:
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    container_name: flow-dynamodb
+    command: -jar DynamoDBLocal.jar -inMemory -sharedDb
+    ports:
+      - "8000:8000"
+
+  dynamodb-init:
+    image: amazon/aws-cli:latest
+    container_name: flow-dynamodb-init
+    depends_on:
+      - dynamodb
+    environment:
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      AWS_DEFAULT_REGION: us-east-1
+    volumes:
+      - ./scripts/init-dynamodb.sh:/init-dynamodb.sh:ro
+    entrypoint: ["/bin/sh", "/init-dynamodb.sh"]
+
+  backend:
+    build:
+      context: ../flow-service-go
+      dockerfile: Dockerfile.dev
+    container_name: flow-backend
+    ports:
+      - "8080:8080"
+    environment:
+      DYNAMODB_ENDPOINT: http://dynamodb:8000
+      AWS_REGION: us-east-1
+      TABLE_NAME: flow-table
+      PORT: "8080"
+      CORS_ORIGIN: http://localhost:4200
+    depends_on:
+      dynamodb-init:
+        condition: service_completed_successfully
+    volumes:
+      - ../flow-service-go/cmd:/app/cmd
+      - ../flow-service-go/internal:/app/internal
+      - ../flow-service-go/go.mod:/app/go.mod
+      - ../flow-service-go/go.sum:/app/go.sum
+      - ../flow-service-go/.air.toml:/app/.air.toml
+      - flow-go-mod-cache:/go/pkg/mod
+
+  frontend:
+    build:
+      context: ./flow-app
+      dockerfile: Dockerfile.dev
+    container_name: flow-frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+    volumes:
+      - ./flow-app/src:/app/src
+      - ./flow-app/angular.json:/app/angular.json
+      - ./flow-app/tailwind.config.js:/app/tailwind.config.js
+      - ./flow-app/postcss.config.js:/app/postcss.config.js
+      - ./flow-app/tsconfig.json:/app/tsconfig.json
+      - ./flow-app/tsconfig.app.json:/app/tsconfig.app.json
+
+volumes:
+  flow-go-mod-cache:

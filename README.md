@@ -1,34 +1,64 @@
 # Flow
 
-Projeto Flow: app Angular (flow-app) + backend serverless (Quarkus, DynamoDB Single-Table, Lambda).
+Personal finance app: Angular SPA (`flow-app`) + Quarkus backend (`flow-service`) backed by DynamoDB Single-Table.
 
-## Executando localmente
+## Local stack (Docker)
 
-1. **Variáveis de ambiente (opcional):** `cp .env.example .env`
-2. **DynamoDB Local:** `docker compose up -d`
-3. **Criar tabela:** `./scripts/init-dynamodb-local.sh` ou `bash scripts/init-dynamodb-local.sh` (requer AWS CLI)
-4. **Ledger-service:** `cd ledger-service && mvn quarkus:dev -Dquarkus.profile=local`
-5. **Frontend:** `cd flow-app && npm install && npm start`
+Tudo sobe com um único comando:
 
-- App: **http://localhost:4200**
-- API ledger: **http://localhost:8081**
-- OpenAPI: **http://localhost:8081/openapi**
+```bash
+docker compose up
+```
 
-Guia completo (pré-requisitos, configuração do ambiente, variáveis): **[docs/LOCAL_SETUP.md](docs/LOCAL_SETUP.md)**.
+| Serviço | URL | Descrição |
+|---------|-----|-----------|
+| Frontend | http://localhost:4200 | Angular dev server (hot reload) |
+| Backend  | http://localhost:8080 | Quarkus dev mode (live reload) |
+| OpenAPI  | http://localhost:8080/q/swagger-ui | Swagger UI |
+| DynamoDB | http://localhost:8000 | DynamoDB Local (in-memory) |
+
+A inicialização cria a tabela `flow-table` automaticamente (idempotente).
+
+### Comandos úteis
+
+```bash
+docker compose up               # sobe tudo em foreground
+docker compose up -d            # sobe em background
+docker compose down             # desliga tudo
+docker compose logs -f backend  # acompanha logs do backend
+docker compose restart backend  # reinicia só o backend
+```
 
 ## Estrutura
 
 | Diretório | Descrição |
 |-----------|-----------|
-| **flow-app** | SPA Angular (contas, transações, dashboard) |
-| **ledger-service** | API Quarkus: escrita atômica + leitura de saldo e extrato (DynamoDB) |
-| **account-service** / **planning-service** / **dashboard-service** | Esqueletos Quarkus (mesma tabela) |
-| **integration-consumer** | Lambda: consome DynamoDB Stream e notifica (SNS) planning/dashboard |
-| **docs** | Documentação (Single-Table, backend serverless, setup local, IntegrationConsumer) |
+| **flow-app** | SPA Angular 21 (standalone components, signals, Tailwind) |
+| **flow-service** | API Quarkus: contas, transações, dashboard, reports, categorias, planning |
 
-## Documentação
+## Stack
 
-- [**LOCAL_SETUP.md**](docs/LOCAL_SETUP.md) — Como executar e configurar o ambiente local
-- [**SERVERLESS_BACKEND.md**](docs/SERVERLESS_BACKEND.md) — Backend serverless (Quarkus, Lambda, DynamoDB)
-- [**DYNAMODB_SINGLE_TABLE.md**](docs/DYNAMODB_SINGLE_TABLE.md) — Design da tabela (PK/SK, GSI, Streams)
-- [**INTEGRATION_CONSUMER.md**](docs/INTEGRATION_CONSUMER.md) — Lambda que consome o stream e notifica SNS
+- **Frontend:** Angular 21, TypeScript, Tailwind CSS, Chart.js
+- **Backend:** Quarkus 3.15, Java 21, JAX-RS (blocking), CDI
+- **Persistência:** DynamoDB Single-Table (PK/SK + GSI1)
+- **Deploy AWS:** Lambda HTTP (API Gateway proxy) + DynamoDB on-demand
+
+## Desenvolvimento sem Docker
+
+**Backend:**
+```bash
+cd flow-service
+mvn quarkus:dev -Dquarkus.profile=local
+```
+
+**Frontend:**
+```bash
+cd flow-app
+npm install
+npm start
+```
+
+Para usar DynamoDB Local sem Docker, suba apenas esse serviço:
+```bash
+docker compose up -d dynamodb dynamodb-init
+```

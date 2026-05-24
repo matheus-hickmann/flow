@@ -1,71 +1,318 @@
-<div class="space-y-6">
-  <h1 class="text-2xl font-bold text-neutral-800 dark:text-neutral-100">Relatórios</h1>
+<!--
+  Relatórios A — Comparação direta (com heatmap)
+  =================================================================
+  Estrutura (ordem):
+    1. Hero band: este mês · vs mês anterior · vs média 5 meses
+    2. Heatmap do mês corrente (acima do gráfico)
+    3. Evolução · 6 meses (line chart) + Δ por categoria
+    4. Tabela cruzada categoria × mês
+  -->
 
-  <!-- Filters -->
-  <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 flex flex-wrap gap-4 items-end">
-    <div>
-      <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">De</label>
+<div class="font-sans text-neutral-900 space-y-6">
+
+  <!-- ─── Sub-header ─────────────────────────────────────────────── -->
+  <div class="flex items-center justify-between pb-4 border-b border-flow">
+    <div class="flex items-center gap-4">
+      <span class="label-eyebrow">ANÁLISE</span>
+      <h1 class="font-serif text-3xl m-0">
+        Relatórios
+        <span class="italic text-flow-ink-soft"> · {{ rangeLabel() }}</span>
+      </h1>
+    </div>
+    <div class="flex items-center gap-2">
+      <!-- Filtros -->
       <input type="month" [(ngModel)]="fromMonth"
-             class="rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-800 dark:text-neutral-100 focus:border-primary focus:ring-1 focus:ring-primary">
-    </div>
-    <div>
-      <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">Até</label>
+             class="h-8 rounded-lg border border-flow bg-flow-paper px-2 text-xs text-flow-ink-soft focus:border-flow-ink focus:ring-1 focus:ring-flow-ink/20" />
+      <span class="text-flow-ink-mute">→</span>
       <input type="month" [(ngModel)]="toMonth"
-             class="rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-800 dark:text-neutral-100 focus:border-primary focus:ring-1 focus:ring-primary">
+             class="h-8 rounded-lg border border-flow bg-flow-paper px-2 text-xs text-flow-ink-soft focus:border-flow-ink focus:ring-1 focus:ring-flow-ink/20" />
+
+      <div class="inline-flex border border-flow rounded-lg p-0.5 bg-flow-paper">
+        <button type="button" (click)="type = 'expense'; load()" class="px-3 py-1 rounded-md text-xs font-medium transition-colors"
+                [class.bg-flow-ink]="type === 'expense'" [class.text-flow-bg]="type === 'expense'" [class.text-flow-ink-soft]="type !== 'expense'">Despesas</button>
+        <button type="button" (click)="type = 'income'; load()" class="px-3 py-1 rounded-md text-xs font-medium transition-colors"
+                [class.bg-flow-ink]="type === 'income'" [class.text-flow-bg]="type === 'income'" [class.text-flow-ink-soft]="type !== 'income'">Receitas</button>
+        <button type="button" (click)="type = 'all'; load()" class="px-3 py-1 rounded-md text-xs font-medium transition-colors"
+                [class.bg-flow-ink]="type === 'all'" [class.text-flow-bg]="type === 'all'" [class.text-flow-ink-soft]="type !== 'all'">Tudo</button>
+      </div>
+
+      <button type="button" (click)="load()" [disabled]="loading()"
+              class="h-8 inline-flex items-center px-3 rounded-lg bg-flow-ink text-flow-bg text-xs font-medium hover:opacity-90 disabled:opacity-50">
+        {{ loading() ? 'Carregando…' : 'Atualizar' }}
+      </button>
     </div>
-    <div>
-      <label class="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">Tipo</label>
-      <select [(ngModel)]="type"
-              class="rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-sm text-neutral-800 dark:text-neutral-100 focus:border-primary focus:ring-1 focus:ring-primary">
-        <option value="expense">Despesas</option>
-        <option value="income">Receitas</option>
-        <option value="all">Todos</option>
-      </select>
-    </div>
-    <button type="button" (click)="load()" [disabled]="loading()"
-            class="rounded-lg bg-primary px-4 py-2 text-sm text-white hover:opacity-90 disabled:opacity-50">
-      {{ loading() ? 'Carregando…' : 'Atualizar' }}
-    </button>
   </div>
 
   @if (error()) {
-    <p class="text-sm text-danger">{{ error() }}</p>
+    <p class="text-sm text-flow-neg">{{ error() }}</p>
   }
 
-  <!-- Category filter chips -->
-  @if (allCategories().length > 0) {
-    <div class="flex flex-wrap gap-2">
-      @for (cat of allCategories(); track cat) {
-        <button type="button"
-                (click)="toggleCategory(cat)"
-                [class.bg-primary]="selectedCategories().has(cat)"
-                [class.text-white]="selectedCategories().has(cat)"
-                [class.bg-neutral-100]="!selectedCategories().has(cat)"
-                [class.dark:bg-neutral-800]="!selectedCategories().has(cat)"
-                [class.text-neutral-700]="!selectedCategories().has(cat)"
-                [class.dark:text-neutral-300]="!selectedCategories().has(cat)"
-                class="px-3 py-1 rounded-full text-xs font-medium transition-colors border border-transparent">
-          {{ cat }}
-        </button>
-      }
+  <!-- ─── Hero: 3 cards de comparação ────────────────────────────── -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="bg-flow-paper border border-flow rounded-2xl px-5 py-5">
+      <span class="label-eyebrow">Este mês · {{ currentMonthLabel() }}</span>
+      <div class="mt-1.5"><span class="font-serif-display text-[44px]">{{ formatBRL(comparison().current) }}</span></div>
+      <p class="mt-2 font-mono-num text-[11px] text-flow-ink-soft">{{ comparison().activeCategories }} categorias ativas</p>
     </div>
-    <p class="text-xs text-neutral-400 dark:text-neutral-500">
-      {{ selectedCategories().size === 0 ? 'Exibindo todas as categorias.' : selectedCategories().size + ' categoria(s) selecionada(s).' }}
-      Clique para filtrar.
-    </p>
+    <div class="bg-flow-peach rounded-2xl px-5 py-5 border border-flow">
+      <div class="flex justify-between">
+        <span class="label-eyebrow !text-flow-peach-ink">vs Mês anterior · {{ previousMonthLabel() }}</span>
+        <span class="px-2 py-0.5 rounded-full text-white font-mono-num text-[10px]"
+              [style.background]="comparison().vsPrevPct >= 0 ? 'var(--flow-neg)' : 'var(--flow-pos)'">
+          {{ comparison().vsPrevPct >= 0 ? '▲' : '▼' }} {{ formatPct(comparison().vsPrevPct) }}
+        </span>
+      </div>
+      <div class="mt-1.5"><span class="font-serif-display text-[44px] text-flow-peach-ink">{{ formatBRL(comparison().previous) }}</span></div>
+      <p class="mt-2 font-mono-num text-[11px] text-flow-peach-ink/80">Δ {{ comparison().delta >= 0 ? '+' : '−' }} {{ formatBRL(Math.abs(comparison().delta)) }}</p>
+    </div>
+    <div class="bg-flow-mint rounded-2xl px-5 py-5 border border-flow">
+      <div class="flex justify-between">
+        <span class="label-eyebrow !text-flow-mint-ink">vs Média</span>
+        <span class="px-2 py-0.5 rounded-full text-white font-mono-num text-[10px]" style="background: var(--flow-mint-ink, #1f4f33)">
+          {{ comparison().vsAvgPct >= 0 ? '▲' : '▼' }} {{ formatPct(comparison().vsAvgPct) }}
+        </span>
+      </div>
+      <div class="mt-1.5"><span class="font-serif-display text-[44px] text-flow-mint-ink">{{ formatBRL(comparison().avg) }}</span></div>
+      <p class="mt-2 font-mono-num text-[11px] text-flow-mint-ink/80">média móvel · normalizada</p>
+    </div>
+  </section>
+
+  <!-- ─── Heatmap · mês corrente (ACIMA do chart de evolução) ────── -->
+  @if (heatmapWeeks().length > 0) {
+    <section class="bg-flow-paper border border-flow rounded-2xl overflow-hidden">
+      <header class="flex items-end justify-between px-6 py-4 border-b border-flow-soft">
+        <div>
+          <span class="label-eyebrow">Mapa de calor · {{ currentMonthLabel() }}</span>
+          <div class="mt-1"><span class="font-serif text-2xl">Quando você gasta mais</span></div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="font-mono-num text-[10px] text-flow-ink-soft">menos</span>
+          @for (s of heatScale; track $index) {
+            <span class="h-3.5 w-3.5 rounded-[3px] border border-flow" [style.background]="s"></span>
+          }
+          <span class="font-mono-num text-[10px] text-flow-ink-soft">mais</span>
+        </div>
+      </header>
+
+      <div class="px-6 py-5">
+        <div class="flex gap-3">
+          <!-- Dias da semana (D S T Q Q S S) -->
+          <div class="flex flex-col gap-1.5 pt-6">
+            @for (d of dayLabels; track $index) {
+              <div class="h-9 flex items-center font-mono-num text-[10px] text-flow-ink-soft">{{ d }}</div>
+            }
+          </div>
+          <!-- Semanas -->
+          <div class="flex-1 grid grid-flow-col auto-cols-fr gap-1.5">
+            @for (week of heatmapWeeks(); track $index) {
+              <div class="flex flex-col gap-1.5">
+                <div class="text-center font-mono-num text-[10px] text-flow-ink-soft h-4">
+                  @if ($index > 0) { S{{ $index + 1 }} }
+                </div>
+                @for (cell of week; track $index) {
+                  @if (cell) {
+                    <div class="h-9 rounded-md border border-flow p-1 flex flex-col justify-between"
+                         [style.background]="cell.color"
+                         [title]="cell.day + '/' + currentMonthLabel() + ' · ' + formatBRL(cell.value)">
+                      <span class="font-mono-num text-[10px]" [style.color]="cell.fg">{{ cell.day }}</span>
+                      @if (cell.value > 0) {
+                        <span class="font-mono-num text-[9px] truncate" [style.color]="cell.fgSoft">{{ cell.short }}</span>
+                      }
+                    </div>
+                  } @else {
+                    <div class="h-9"></div>
+                  }
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- KPIs do mês -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-5 pt-4 border-t border-flow-soft">
+          <div>
+            <div class="label-eyebrow">DIA MAIS CARO</div>
+            <div class="font-serif text-2xl mt-0.5">{{ heatStats().peakDay }}</div>
+            <div class="font-mono-num text-[11px] text-flow-ink-soft">{{ formatBRL(heatStats().peakValue) }}</div>
+          </div>
+          <div>
+            <div class="label-eyebrow">MÉDIA POR DIA ATIVO</div>
+            <div class="font-serif text-2xl mt-0.5">{{ formatBRL(heatStats().avgPerActive) }}</div>
+            <div class="font-mono-num text-[11px] text-flow-ink-soft">{{ heatStats().activeDays }} de {{ heatStats().totalDays }} dias</div>
+          </div>
+          <div>
+            <div class="label-eyebrow">SEM GASTO</div>
+            <div class="font-serif text-2xl mt-0.5">{{ heatStats().emptyDays }}</div>
+            <div class="font-mono-num text-[11px] text-flow-ink-soft">dias "limpos"</div>
+          </div>
+          <div>
+            <div class="label-eyebrow">TOTAL DO MÊS</div>
+            <div class="font-serif text-2xl mt-0.5">{{ formatBRL(heatStats().total) }}</div>
+            <div class="font-mono-num text-[11px] text-flow-ink-soft">{{ heatStats().txCount }} lançamentos</div>
+          </div>
+        </div>
+      </div>
+    </section>
   }
 
-  <!-- Chart -->
-  @if (!loading() && months().length > 0) {
-    <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4">
-      <div style="position: relative; height: 360px;">
-        <canvas #chartCanvas></canvas>
+  <!-- ─── Despesas mensais + Δ por categoria ─────────────────────── -->
+  <section class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+    <!-- Despesas mensais (chart.js) -->
+    <div class="lg:col-span-7 bg-flow-paper border border-flow rounded-2xl overflow-hidden">
+      <header class="flex items-end justify-between px-6 py-4 border-b border-flow-soft">
+        <div>
+          <span class="label-eyebrow">Evolução · 6 meses</span>
+          <div class="mt-1"><span class="font-serif text-2xl">Despesas mensais por categoria</span></div>
+        </div>
+      </header>
+
+      <!-- Category chips para filtrar -->
+      @if (allCategories().length > 0) {
+        <div class="px-6 py-3 border-b border-flow-soft flex flex-wrap gap-1.5">
+          @for (cat of allCategories(); track cat) {
+            <button type="button" (click)="toggleCategory(cat)"
+                    class="px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors"
+                    [class.bg-flow-ink]="selectedCategories().has(cat)"
+                    [class.text-flow-bg]="selectedCategories().has(cat)"
+                    [class.border-flow-ink]="selectedCategories().has(cat)"
+                    [class.bg-flow-bg]="!selectedCategories().has(cat)"
+                    [class.border-flow]="!selectedCategories().has(cat)"
+                    [class.text-flow-ink-soft]="!selectedCategories().has(cat)">
+              {{ cat }}
+            </button>
+          }
+        </div>
+      }
+
+      <div class="px-4 py-4">
+        @if (!loading() && months().length > 0) {
+          <div style="position: relative; height: 320px;">
+            <canvas #chartCanvas></canvas>
+          </div>
+        } @else if (!loading() && months().length === 0) {
+          <div class="p-10 text-center text-flow-ink-mute text-sm">
+            Nenhum dado para o período selecionado.
+          </div>
+        }
       </div>
     </div>
-  } @else if (!loading() && months().length === 0) {
-    <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-8 text-center">
-      <p class="text-neutral-500 dark:text-neutral-400">Nenhum dado para o período selecionado.</p>
-      <p class="text-sm text-neutral-400 dark:text-neutral-500 mt-1">Selecione um período e clique em Atualizar.</p>
+
+    <!-- Δ por categoria -->
+    <div class="lg:col-span-5 bg-flow-paper border border-flow rounded-2xl overflow-hidden">
+      <header class="px-6 py-4 border-b border-flow-soft">
+        <span class="label-eyebrow">Δ por categoria · {{ currentMonthLabel() }} vs {{ previousMonthLabel() }}</span>
+        <div class="mt-1"><span class="font-serif text-2xl">Quem subiu, quem caiu</span></div>
+      </header>
+      <div class="px-6 py-3 flex flex-col gap-2.5">
+        @for (d of categoryDeltas(); track d.category) {
+          <div class="grid grid-cols-[100px_1fr_1fr_88px] gap-2 items-center">
+            <span class="text-[12px] font-medium inline-flex items-center gap-1.5 truncate">
+              <span class="h-1.5 w-1.5 rounded-full shrink-0" [style.background]="categoryColor(d.category)"></span>
+              <span class="truncate">{{ d.category }}</span>
+            </span>
+            <!-- Esquerda: economizou -->
+            <div class="h-3 relative flex justify-end">
+              @if (d.delta < 0) {
+                <div class="h-full rounded-sm bg-flow-mint" [style.width.%]="d.barPct"></div>
+              }
+            </div>
+            <!-- Direita: gastou mais -->
+            <div class="h-3 relative">
+              @if (d.delta > 0) {
+                <div class="h-full rounded-sm bg-flow-rose" [style.width.%]="d.barPct"></div>
+              }
+            </div>
+            <span class="font-mono-num text-[11px] font-medium text-right"
+                  [class.text-flow-neg]="d.delta > 0"
+                  [class.text-flow-pos]="d.delta < 0"
+                  [class.text-flow-ink-soft]="d.delta === 0">
+              {{ d.delta === 0 ? '—' : (d.delta > 0 ? '+' : '−') + formatBRL(Math.abs(d.delta)) }}
+            </span>
+          </div>
+        }
+      </div>
+      <div class="px-6 py-3 flex justify-between font-mono-num text-[10px] uppercase tracking-widest text-flow-ink-soft border-t border-flow-soft">
+        <span>economizou</span><span>gastou mais</span>
+      </div>
     </div>
-  }
+  </section>
+
+  <!-- ─── Tabela cruzada categoria × mês ──────────────────────────── -->
+  <section class="bg-flow-paper border border-flow rounded-2xl overflow-hidden">
+    <header class="flex items-baseline justify-between px-6 py-4 border-b border-flow-soft">
+      <div>
+        <span class="label-eyebrow">Tabela cruzada · todas categorias</span>
+        <div class="mt-1"><span class="font-serif text-2xl">Comparação por categoria × mês</span></div>
+      </div>
+      <span class="font-mono-num text-[11px] text-flow-ink-soft">valores · R$ · arredondados</span>
+    </header>
+    <div class="overflow-x-auto">
+      <table class="w-full font-mono-num text-xs">
+        <thead>
+          <tr>
+            <th class="px-4 py-3 text-left label-eyebrow !text-flow-ink-soft">Categoria</th>
+            @for (m of months(); track m; let i = $index) {
+              <th class="px-3 py-3 text-right label-eyebrow !text-flow-ink-soft"
+                  [class.bg-flow-line-soft]="i === months().length - 1">{{ monthShort(m) }}</th>
+            }
+            <th class="px-3 py-3 text-right label-eyebrow !text-flow-ink-soft">Δ vs {{ previousMonthLabel() }}</th>
+            <th class="px-3 py-3 text-right label-eyebrow !text-flow-ink-soft">Tendência</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of crossTable(); track row.category) {
+            <tr class="border-t border-flow-soft">
+              <td class="px-4 py-2.5 font-sans text-[13px] font-medium">
+                <span class="inline-flex items-center gap-1.5">
+                  <span class="h-2 w-2 rounded-full" [style.background]="categoryColor(row.category)"></span>
+                  {{ row.category }}
+                </span>
+              </td>
+              @for (v of row.values; track $index; let i = $index) {
+                <td class="px-3 py-2.5 text-right whitespace-nowrap"
+                    [class.bg-flow-line-soft]="i === row.values.length - 1"
+                    [class.text-flow-ink]="i === row.values.length - 1"
+                    [class.text-flow-ink-soft]="i !== row.values.length - 1"
+                    [class.font-medium]="i === row.values.length - 1">
+                  {{ v === 0 ? '·' : numberFmt(v) }}
+                </td>
+              }
+              <td class="px-3 py-2.5 text-right font-medium"
+                  [class.text-flow-neg]="row.delta > 0"
+                  [class.text-flow-pos]="row.delta < 0"
+                  [class.text-flow-ink-soft]="row.delta === 0">
+                {{ row.delta === 0 ? '·' : (row.delta > 0 ? '+' : '−') + numberFmt(Math.abs(row.delta)) }}
+              </td>
+              <td class="px-3 py-2.5 text-right">
+                <svg viewBox="0 0 70 22" class="h-5 w-[70px] inline-block">
+                  <path [attr.d]="row.spark" fill="none" [attr.stroke]="categoryColor(row.category)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" />
+                </svg>
+              </td>
+            </tr>
+          }
+          @if (totalsRow(); as t) {
+            <tr class="border-t-2 border-flow-ink">
+              <td class="px-4 py-3 font-sans text-[13px] font-bold">Total</td>
+              @for (v of t.values; track $index; let i = $index) {
+                <td class="px-3 py-3 text-right font-semibold"
+                    [class.bg-flow-butter]="i === t.values.length - 1">
+                  {{ numberFmt(v) }}
+                </td>
+              }
+              <td class="px-3 py-3 text-right font-semibold"
+                  [class.text-flow-neg]="t.delta > 0"
+                  [class.text-flow-pos]="t.delta < 0">
+                {{ t.delta > 0 ? '+' : '−' }}{{ numberFmt(Math.abs(t.delta)) }}
+              </td>
+              <td class="px-3 py-3 text-right">
+                <svg viewBox="0 0 70 22" class="h-5 w-[70px] inline-block">
+                  <path [attr.d]="t.spark" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" />
+                </svg>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
 </div>

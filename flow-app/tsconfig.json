@@ -25,19 +25,5 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  },
-  "references": [
-    {
-      "path": "./projects/dashboard/tsconfig.app.json"
-    },
-    {
-      "path": "./projects/transactions/tsconfig.app.json"
-    },
-    {
-      "path": "./projects/accounts/tsconfig.app.json"
-    },
-    {
-      "path": "./projects/reports/tsconfig.app.json"
-    }
-  ]
+  }
 }

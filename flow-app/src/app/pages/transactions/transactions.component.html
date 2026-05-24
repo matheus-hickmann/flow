@@ -1,143 +1,262 @@
-<div class="space-y-6">
-  <nav class="flex items-center justify-center gap-4 py-2" aria-label="Navegação por mês">
-    <button type="button"
-            (click)="previousMonth()"
-            class="p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors"
-            [attr.aria-label]="ariaLabelMonthPrevious">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-      </svg>
-    </button>
-    <span class="min-w-[8rem] text-center text-lg font-semibold text-neutral-800">{{ monthLabel() }}</span>
-    <button type="button"
-            (click)="nextMonth()"
-            class="p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors"
-            [attr.aria-label]="ariaLabelMonthNext">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-      </svg>
-    </button>
-  </nav>
+<!--
+  Transações A — Swimlanes por conta
+  =================================================================
+  Layout: rail esquerdo com contas + lista agrupada por dia,
+  cada linha com listra colorida da conta (swimlane).
+  -->
 
-  <section>
-    <h2 class="text-lg font-semibold text-neutral-800 mb-6">Totais do mês</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="rounded-xl p-4 shadow-sm bg-success-light">
-        <p class="text-sm font-medium text-neutral-600">Entradas</p>
-        <p class="text-xl font-bold text-neutral-900">{{ totalIncome() | currencyBrl }}</p>
-      </div>
-      <div class="rounded-xl p-4 shadow-sm bg-danger-light">
-        <p class="text-sm font-medium text-neutral-600">Saídas</p>
-        <p class="text-xl font-bold text-neutral-900">{{ totalExpense() | currencyBrl }}</p>
-      </div>
-      <div class="rounded-xl p-4 shadow-sm bg-secondary-light">
-        <p class="text-sm font-medium text-neutral-600">Saldo do mês</p>
-        <p class="text-xl font-bold" [class.text-success]="balance() >= 0" [class.text-danger]="balance() < 0">
-          {{ balance() >= 0 ? '+' : '-' }} {{ (balance() >= 0 ? balance() : -balance()) | currencyBrl }}
-        </p>
-      </div>
+<div class="font-sans text-neutral-900 flex gap-6">
+
+  <!-- ─── Rail esquerdo: contas + resumo ───────────────────────────────── -->
+  <aside class="w-64 shrink-0 flex flex-col gap-4">
+    <div class="flex items-baseline justify-between">
+      <span class="label-eyebrow">Contas · {{ accountsList().length }}</span>
     </div>
-  </section>
 
-  <section>
-    <h2 class="text-lg font-semibold text-neutral-800 mb-4">Filtros</h2>
-    <div class="bg-white rounded-xl border border-neutral-200 p-4">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div>
-          <label for="filter-desc" class="block text-sm font-medium text-neutral-700 mb-1">Descrição</label>
-          <input id="filter-desc" type="text"
-                 [value]="filterDescription()"
-                 (input)="setFilterDescription($event)"
-                 class="w-full rounded-lg border border-neutral-300 p-3 text-sm text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
-                 placeholder="Buscar...">
-        </div>
-        <div>
-          <label for="filter-cat" class="block text-sm font-medium text-neutral-700 mb-1">Categoria</label>
-          <app-dropdown id="filter-cat" [value]="filterCategory()" (valueChange)="setFilterCategoryValue($event)" [ariaLabel]="'Categoria'">
-            <option value="">Todas</option>
-            @for (c of categoriesList; track c) {
-              <option [value]="c">{{ c }}</option>
-            }
-          </app-dropdown>
-        </div>
-        <div>
-          <label for="filter-acc" class="block text-sm font-medium text-neutral-700 mb-1">Conta</label>
-          <app-dropdown id="filter-acc" [value]="filterAccount()" (valueChange)="setFilterAccountValue($event)" [ariaLabel]="'Conta'">
-            <option value="">Todas</option>
-            @for (a of accountsList(); track a) {
-              <option [value]="a">{{ a }}</option>
-            }
-          </app-dropdown>
-        </div>
-        <div>
-          <label for="filter-type" class="block text-sm font-medium text-neutral-700 mb-1">Tipo</label>
-          <app-dropdown id="filter-type" [value]="filterType()" (valueChange)="setFilterTypeValue($event)" [ariaLabel]="'Tipo'">
-            <option value="all">Todos</option>
-            <option value="income">Receita</option>
-            <option value="expense">Despesa</option>
-          </app-dropdown>
+    <div class="flex flex-col gap-1.5">
+      <button type="button" (click)="setSelectedAccount('')"
+              class="flex items-center justify-between px-3 py-2 rounded-xl transition-colors"
+              [class.bg-flow-ink]="selectedAccount() === ''"
+              [class.text-flow-bg]="selectedAccount() === ''">
+        <span class="text-sm font-medium">Todas as contas</span>
+        <span class="font-mono-num text-xs">{{ allAccountsBalance() }}</span>
+      </button>
+
+      @for (a of accountsWithMeta(); track a.name) {
+        <button type="button" (click)="setSelectedAccount(a.name)"
+                class="flex items-center justify-between px-3 py-2 rounded-xl transition-colors border"
+                [class.bg-flow-paper]="selectedAccount() === a.name"
+                [class.border-flow]="selectedAccount() === a.name"
+                [class.border-transparent]="selectedAccount() !== a.name"
+                [class.hover:bg-flow-paper]="selectedAccount() !== a.name">
+          <span class="flex items-center gap-2.5 min-w-0">
+            <span class="h-6 w-6 rounded-md grid place-items-center shrink-0" [style.background]="a.color">
+              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                <path d="M3 21h18M5 21v-9m4 9v-9m6 9v-9m4 9v-9M2 10l10-6 10 6H2z"/>
+              </svg>
+            </span>
+            <span class="text-left min-w-0">
+              <span class="block text-[13px] font-medium truncate">{{ a.name }}</span>
+              <span class="block text-[10px] text-flow-ink-soft">{{ a.movements }} mov.</span>
+            </span>
+          </span>
+          <span class="font-mono-num text-[11px] shrink-0"
+                [class.text-flow-neg]="a.balance < 0"
+                [class.text-flow-ink]="a.balance >= 0">{{ formatBRL(a.balance) }}</span>
+        </button>
+      }
+    </div>
+
+    <!-- Resumo do mês -->
+    <div class="mt-4 p-4 bg-flow-paper border border-flow rounded-xl flex flex-col gap-3">
+      <span class="label-eyebrow">Resumo · {{ monthLabel() }}</span>
+      <div>
+        <div class="font-mono-num text-[10px] text-flow-pos">ENTRADAS</div>
+        <div class="font-mono-num text-base font-medium">{{ totalIncome() | currencyBrl }}</div>
+      </div>
+      <div>
+        <div class="font-mono-num text-[10px] text-flow-neg">SAÍDAS</div>
+        <div class="font-mono-num text-base font-medium">{{ totalExpense() | currencyBrl }}</div>
+      </div>
+      <hr class="border-flow-line-soft" />
+      <div>
+        <div class="font-mono-num text-[10px] text-flow-ink-soft">SALDO</div>
+        <div class="font-serif-display text-2xl"
+             [class.text-flow-pos]="balance() >= 0"
+             [class.text-flow-neg]="balance() < 0">
+          {{ balance() >= 0 ? '+' : '−' }} {{ (balance() >= 0 ? balance() : -balance()) | currencyBrl }}
         </div>
       </div>
     </div>
-  </section>
+  </aside>
 
-  <section>
-    <h2 class="text-lg font-semibold text-neutral-800 mb-4">Listagem</h2>
-    <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-neutral-200">
-          <thead class="bg-neutral-50">
-            <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Data</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Descrição</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Categoria</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Conta</th>
-              <th class="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase">Valor</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-neutral-200">
-            @for (tx of paginatedTransactions(); track tx.id) {
-              <tr class="hover:bg-neutral-50/50">
-                <td class="px-4 py-3 text-sm text-neutral-700">{{ formatDate(tx.date) }}</td>
-                <td class="px-4 py-3 text-sm text-neutral-800">{{ tx.description }}</td>
-                <td class="px-4 py-3 text-sm text-neutral-700">{{ tx.category }}</td>
-                <td class="px-4 py-3 text-sm text-neutral-700">{{ tx.account }}</td>
-                <td class="px-4 py-3 text-sm text-right font-medium"
-                    [class.text-success]="tx.isIncome"
-                    [class.text-neutral-700]="!tx.isIncome">
-                  {{ tx.isIncome ? '+' : '-' }} {{ tx.value | currencyBrl }}
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="5" class="px-4 py-8 text-center text-neutral-500">Nenhuma transação encontrada.</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+  <!-- ─── Coluna principal ─────────────────────────────────────────────── -->
+  <main class="flex-1 min-w-0 space-y-5">
+
+    <!-- Header: mês + nav + ação primária -->
+    <div class="flex items-center justify-between pb-4 border-b border-flow">
+      <div class="flex items-center gap-4">
+        <span class="label-eyebrow">LANÇAMENTOS</span>
+        <h1 class="font-serif text-3xl m-0">
+          Transações
+          <span class="italic text-flow-ink-soft"> · {{ monthLabel() }}</span>
+        </h1>
       </div>
-      @if (filteredByMonth().length > 0) {
-        <div class="px-4 py-3 border-t border-neutral-200 flex items-center justify-between gap-4 flex-wrap">
-          <p class="text-sm text-neutral-600">
-            Mostrando {{ fromIndex() + 1 }}–{{ toIndex() }} de {{ filteredByMonth().length }} transação(ões)
-          </p>
-          <div class="flex items-center gap-2">
-            <button type="button"
-                    (click)="prevPage()"
-                    [disabled]="currentPage() === 0"
-                    class="rounded-lg border border-neutral-300 px-3 py-1.5 text-sm text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 disabled:pointer-events-none">
-              Anterior
-            </button>
-            <span class="text-sm text-neutral-600">{{ currentPage() + 1 }} / {{ totalPages() }}</span>
-            <button type="button"
-                    (click)="nextPage()"
-                    [disabled]="currentPage() >= totalPages() - 1"
-                    class="rounded-lg border border-neutral-300 px-3 py-1.5 text-sm text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 disabled:pointer-events-none">
-              Próxima
-            </button>
+      <div class="flex items-center gap-2">
+        <button type="button" (click)="previousMonth()" [attr.aria-label]="ariaLabelMonthPrevious"
+                class="h-8 w-8 grid place-items-center rounded-lg border border-flow text-flow-ink-soft hover:bg-flow-paper">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <button type="button" (click)="nextMonth()" [attr.aria-label]="ariaLabelMonthNext"
+                class="h-8 w-8 grid place-items-center rounded-lg border border-flow text-flow-ink-soft hover:bg-flow-paper">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+        <button type="button" (click)="openImport()"
+                class="h-8 inline-flex items-center gap-1.5 px-3 rounded-lg border border-flow text-xs font-medium hover:bg-flow-paper">
+          <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Importar CSV
+        </button>
+        <button type="button"
+                class="h-8 inline-flex items-center gap-1.5 px-3 rounded-lg bg-flow-ink text-flow-bg text-xs font-medium hover:opacity-90">
+          <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
+          </svg>
+          Novo lançamento
+        </button>
+      </div>
+    </div>
+
+    <!-- Toolbar: busca + chips de tipo -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <div class="flex-1 min-w-[260px] flex items-center bg-flow-paper border border-flow rounded-xl px-3 h-10">
+        <svg class="h-4 w-4 text-flow-ink-soft" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <circle cx="11" cy="11" r="7" /><path d="m20 20-3-3" />
+        </svg>
+        <input type="text"
+               [value]="filterDescription()"
+               (input)="setFilterDescription($event)"
+               placeholder="Buscar por descrição, categoria, valor…"
+               class="flex-1 ml-2 bg-transparent border-0 outline-none text-sm placeholder:text-flow-ink-mute" />
+      </div>
+
+      <button type="button" (click)="setFilterTypeValue('all')"
+              class="px-3 h-10 rounded-xl text-xs font-medium border transition-colors"
+              [class.bg-flow-ink]="filterType() === 'all'"
+              [class.text-flow-bg]="filterType() === 'all'"
+              [class.border-flow-ink]="filterType() === 'all'"
+              [class.bg-flow-paper]="filterType() !== 'all'"
+              [class.border-flow]="filterType() !== 'all'">Todos</button>
+      <button type="button" (click)="setFilterTypeValue('income')"
+              class="px-3 h-10 rounded-xl text-xs font-medium border transition-colors"
+              [class.bg-flow-ink]="filterType() === 'income'"
+              [class.text-flow-bg]="filterType() === 'income'"
+              [class.border-flow-ink]="filterType() === 'income'"
+              [class.bg-flow-paper]="filterType() !== 'income'"
+              [class.border-flow]="filterType() !== 'income'">Entradas</button>
+      <button type="button" (click)="setFilterTypeValue('expense')"
+              class="px-3 h-10 rounded-xl text-xs font-medium border transition-colors"
+              [class.bg-flow-ink]="filterType() === 'expense'"
+              [class.text-flow-bg]="filterType() === 'expense'"
+              [class.border-flow-ink]="filterType() === 'expense'"
+              [class.bg-flow-paper]="filterType() !== 'expense'"
+              [class.border-flow]="filterType() !== 'expense'">Saídas</button>
+
+      <app-dropdown id="filter-cat" [value]="filterCategory()" (valueChange)="setFilterCategoryValue($event)" [ariaLabel]="'Categoria'">
+        <option value="">Todas as categorias</option>
+        @for (c of categoriesList; track c) {
+          <option [value]="c">{{ c }}</option>
+        }
+      </app-dropdown>
+    </div>
+
+    <!-- ─── Grupos por dia ───────────────────────────────────────────── -->
+    <div class="flex flex-col gap-6">
+      @for (group of groupedByDay(); track group.dayKey) {
+        <section>
+          <header class="flex items-baseline justify-between pb-1.5 border-b border-flow mb-2">
+            <div class="flex items-baseline gap-3">
+              <span class="font-serif text-2xl">{{ group.day }}</span>
+              <span class="font-mono-num text-[11px] text-flow-ink-soft">
+                {{ group.weekday }} · {{ group.rows.length }} mov.
+              </span>
+            </div>
+            <span class="font-mono-num text-sm font-medium"
+                  [class.text-flow-pos]="group.total >= 0"
+                  [class.text-flow-ink]="group.total < 0">
+              {{ group.total >= 0 ? '+' : '−' }} {{ formatBRL(group.total >= 0 ? group.total : -group.total) }}
+            </span>
+          </header>
+
+          <div class="flex flex-col gap-1.5">
+            @for (tx of group.rows; track tx.id) {
+              <div class="grid grid-cols-[6px_minmax(0,1fr)_140px_minmax(0,1.4fr)_120px_24px] items-center gap-3 px-3 py-2 bg-flow-paper border border-flow rounded-xl hover:bg-flow-bg/50 transition-colors">
+                <!-- swim-lane -->
+                <div class="h-7 w-1 rounded-sm" [style.background]="accountColor(tx.account)"></div>
+
+                <!-- descrição + arrow -->
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="h-7 w-7 rounded-lg grid place-items-center shrink-0"
+                        [class.bg-flow-mint]="tx.isIncome"
+                        [class.bg-flow-line-soft]="!tx.isIncome">
+                    @if (tx.isIncome) {
+                      <svg class="h-3 w-3 text-flow-pos" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M9 7h8v8" />
+                      </svg>
+                    } @else {
+                      <svg class="h-3 w-3 text-flow-ink-soft" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 7 7 17M7 9v8h8" />
+                      </svg>
+                    }
+                  </span>
+                  <span class="text-[13px] font-medium truncate">{{ tx.description }}</span>
+                </div>
+
+                <!-- categoria pill -->
+                <span class="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-flow-line-soft text-flow-ink-soft text-[11px] font-medium truncate">
+                  {{ tx.category }}
+                </span>
+
+                <!-- conta com dot -->
+                <span class="flex items-center gap-2 text-[12px] text-flow-ink-soft min-w-0">
+                  <span class="h-2 w-2 rounded-full shrink-0" [style.background]="accountColor(tx.account)"></span>
+                  <span class="truncate">{{ tx.account }}</span>
+                </span>
+
+                <!-- valor -->
+                <span class="text-right font-mono-num text-sm font-medium"
+                      [class.text-flow-pos]="tx.isIncome"
+                      [class.text-flow-ink]="!tx.isIncome">
+                  {{ tx.isIncome ? '+' : '−' }} {{ tx.value | currencyBrl }}
+                </span>
+
+                <!-- ações -->
+                <button type="button" class="text-flow-ink-mute hover:text-flow-ink-soft" aria-label="Mais ações">
+                  <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
+                    <circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>
+                  </svg>
+                </button>
+              </div>
+            }
           </div>
+        </section>
+      } @empty {
+        <div class="bg-flow-paper border border-flow rounded-xl p-10 text-center text-flow-ink-mute text-sm">
+          Nenhuma transação encontrada para este período.
         </div>
       }
     </div>
-  </section>
+
+    <!-- Paginação -->
+    @if (filteredByMonth().length > 0 && totalPages() > 1) {
+      <div class="flex items-center justify-between pt-3 border-t border-flow">
+        <p class="text-sm text-flow-ink-soft">
+          Mostrando {{ fromIndex() + 1 }}–{{ toIndex() }} de {{ filteredByMonth().length }} transações
+        </p>
+        <div class="flex items-center gap-2">
+          <button type="button" (click)="prevPage()" [disabled]="currentPage() === 0"
+                  class="rounded-lg border border-flow px-3 py-1.5 text-sm text-flow-ink-soft hover:bg-flow-paper disabled:opacity-50 disabled:pointer-events-none">
+            Anterior
+          </button>
+          <span class="font-mono-num text-sm text-flow-ink-soft">{{ currentPage() + 1 }} / {{ totalPages() }}</span>
+          <button type="button" (click)="nextPage()" [disabled]="currentPage() >= totalPages() - 1"
+                  class="rounded-lg border border-flow px-3 py-1.5 text-sm text-flow-ink-soft hover:bg-flow-paper disabled:opacity-50 disabled:pointer-events-none">
+            Próxima
+          </button>
+        </div>
+      </div>
+    }
+  </main>
 </div>
+
+@if (showImportModal()) {
+  <app-import-modal
+    [accountsInput]="accountsSignal()"
+    (closed)="showImportModal.set(false)"
+    (imported)="onImportDone()" />
+}

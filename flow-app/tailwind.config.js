@@ -1,60 +1,56 @@
-/**
- * Único ponto de definição das cores do tema (design tokens).
- * Use nas páginas as classes semânticas: primary, success, danger, secondary (e variantes -light).
- * Evite setar cores individuais nos componentes; referencie este tema.
- */
-const themeColors = {
-  primary: '#22c55e',
-  'primary-light': '#dcfce7',
-  secondary: '#1e3a5f',
-  'secondary-light': '#dbeafe',
-  success: '#22c55e',
-  'success-light': '#dcfce7',
-  danger: '#ef4444',
-  'danger-light': '#ffe4e6',
-  gold: '#f59e0b',
-  'gold-light': '#fef3c7',
-};
-
-const neutral = {
-  50: '#f8fafc',
-  100: '#f1f5f9',
-  200: '#e2e8f0',
-  300: '#cbd5e1',
-  400: '#94a3b8',
-  500: '#64748b',
-  600: '#475569',
-  700: '#334155',
-  800: '#1e293b',
-  900: '#0f172a',
-};
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  content: ['./src/**/*.{html,ts}'],
   darkMode: 'class',
-  content: [
-    "./src/**/*.{html,ts}",
-    "./projects/dashboard/src/**/*.{html,ts}",
-    "./projects/transactions/src/**/*.{html,ts}",
-    "./projects/accounts/src/**/*.{html,ts}",
-    "./projects/reports/src/**/*.{html,ts}",
-  ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        serif: ['"Instrument Serif"', 'Times New Roman', 'serif'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+      },
       colors: {
-        ...themeColors,
-        neutral,
-        ledger: {
-          blue: themeColors.secondary,
-          green: themeColors.primary,
-          'green-light': themeColors['primary-light'],
-          'blue-light': themeColors['secondary-light'],
-          'red-light': themeColors['danger-light'],
-          salmon: '#fecaca',
+        // ─── Tokens semânticos preservados (compatibilidade com código atual) ──
+        primary:           '#1d1a16',           // ink
+        'primary-light':   '#f5f0e6',           // bg
+        secondary:         '#6b665e',           // ink-soft
+        'secondary-light': '#cfdfeb',           // sky pastel
+        success:           '#2c6b3d',
+        'success-light':   '#cce8d6',
+        danger:            '#a84439',
+        'danger-light':    '#edd1d6',
+        gold:              '#6b5a16',
+        'gold-light':      '#f3e9b9',
+
+        // ─── Paleta Flow — pastel oklch ────────────────────────────────────────
+        flow: {
+          bg:        '#f5f0e6',
+          paper:     '#fbf8f1',
+          ink:       '#1d1a16',
+          'ink-soft':'#6b665e',
+          'ink-mute':'#9a9389',
+          line:      '#e3ddcf',
+          'line-soft':'#ecead8',
+          mint:      '#cce8d6',
+          'mint-ink':'#1f4f33',
+          peach:     '#f4d8c7',
+          'peach-ink':'#7a3a1d',
+          butter:    '#f3e9b9',
+          'butter-ink':'#6b5a16',
+          lilac:     '#dcd2ec',
+          'lilac-ink':'#4a3a73',
+          rose:      '#edd1d6',
+          'rose-ink':'#7a2a3a',
+          sage:      '#cdd9be',
+          'sage-ink':'#3d5526',
+          sky:       '#cfdfeb',
+          'sky-ink': '#1f4a6b',
+          pos:       '#2c6b3d',
+          neg:       '#a84439',
         },
       },
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+      letterSpacing: {
+        'tight-display': '-0.02em',
       },
     },
   },

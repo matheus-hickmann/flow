@@ -24,6 +24,7 @@ export { PlanningService } from './services/planning.service';
 export { ThemeService } from './services/theme.service';
 export { CategoryService, type CategoryItem, type CategoryList, DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from './services/category.service';
 export { ReportService, type MonthlyReport, type CategorySeries } from './services/report.service';
+export { ImportService, type ParsedRow, type MerchantRule, type ImportPreviewResponse, type ImportCommitRequest, type ImportCommitResponse } from './services/import.service';
 export type {
   EntryResponseDto,
   PostTransactionRequestDto,

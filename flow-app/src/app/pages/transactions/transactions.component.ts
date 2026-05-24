@@ -11,11 +11,31 @@ import type { Account, Transaction } from '../../core';
 import { AccountService, ENVIRONMENT, TransactionService } from '../../core';
 import { mapTransactionListItemsToTransactions } from '../../core/utils/transaction-mapper';
 import { CurrencyBrlPipe, DropdownComponent } from '../../shared';
+import { ImportModalComponent } from '../../features/import';
+
+// Paleta pastel para mapear contas que não possuam cor própria
+const FLOW_PASTEL = ['#dcd2ec', '#f4d8c7', '#cce8d6', '#f3e9b9', '#cfdfeb', '#edd1d6', '#cdd9be'];
+const WEEKDAYS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+
+interface AccountMeta {
+  readonly name: string;
+  readonly color: string;
+  readonly balance: number;
+  readonly movements: number;
+}
+
+interface DayGroup {
+  readonly dayKey: string;
+  readonly day: string;
+  readonly weekday: string;
+  readonly total: number;
+  readonly rows: readonly Transaction[];
+}
 
 @Component({
   selector: 'app-transactions',
   standalone: true,
-  imports: [CurrencyBrlPipe, DropdownComponent],
+  imports: [CurrencyBrlPipe, DropdownComponent, ImportModalComponent],
   templateUrl: './transactions.component.html',
 })
 export class TransactionsComponent implements OnInit {
@@ -27,7 +47,7 @@ export class TransactionsComponent implements OnInit {
   private readonly transactionService = inject(TransactionService);
   private readonly env = inject(ENVIRONMENT);
 
-  private readonly accountsSignal = signal<Account[]>([]);
+  protected readonly accountsSignal = signal<Account[]>([]);
   private readonly transactionsSignal = signal<Transaction[]>([]);
   private readonly loadingSignal = signal(false);
 
@@ -40,9 +60,15 @@ export class TransactionsComponent implements OnInit {
   private readonly currentDateSignal = signal<{ year: number; month: number }>(this.getInitialDate());
   private readonly filterDescriptionSignal = signal('');
   private readonly filterCategorySignal = signal('');
-  private readonly filterAccountSignal = signal('');
+  private readonly filterAccountSignal = signal('');   // mantido p/ compatibilidade
   private readonly filterTypeSignal = signal<'all' | 'income' | 'expense'>('all');
   private readonly currentPageSignal = signal(0);
+
+  // Conta selecionada no rail esquerdo
+  private readonly selectedAccountSignal = signal<string>('');
+  readonly selectedAccount = this.selectedAccountSignal.asReadonly();
+
+  readonly showImportModal = signal(false);
 
   readonly monthLabel = computed(() => {
     const { year, month } = this.currentDateSignal();
@@ -64,7 +90,7 @@ export class TransactionsComponent implements OnInit {
     const monthKey = this.monthKey();
     const desc = this.filterDescriptionSignal().toLowerCase().trim();
     const cat = this.filterCategorySignal().trim();
-    const acc = this.filterAccountSignal().trim();
+    const acc = this.selectedAccountSignal() || this.filterAccountSignal().trim();
     const type = this.filterTypeSignal();
     return transactions.filter((tx) => {
       if (tx.date.slice(0, 7) !== monthKey) return false;
@@ -100,6 +126,74 @@ export class TransactionsComponent implements OnInit {
     return list.slice(start, start + TRANSACTIONS_PAGE_SIZE);
   });
 
+  // ─── Rail esquerdo: metadados por conta ────────────────────────────
+  readonly accountsWithMeta = computed<AccountMeta[]>(() => {
+    const accs = this.accountsSignal();
+    const monthKey = this.monthKey();
+    const txs = this.transactionsSignal().filter((t) => t.date.slice(0, 7) === monthKey);
+    if (accs.length > 0) {
+      return accs.map((a, i) => ({
+        name: a.name,
+        color: a.color || FLOW_PASTEL[i % FLOW_PASTEL.length],
+        balance: Number(a.balance) || 0,
+        movements: txs.filter((t) => t.account === a.name).length,
+      }));
+    }
+    // fallback baseado em transações
+    const names = [...new Set(txs.map((t) => t.account))];
+    return names.map((name, i) => ({
+      name,
+      color: FLOW_PASTEL[i % FLOW_PASTEL.length],
+      balance: 0,
+      movements: txs.filter((t) => t.account === name).length,
+    }));
+  });
+
+  readonly allAccountsBalance = computed(() => {
+    const sum = this.accountsWithMeta().reduce((s, a) => s + a.balance, 0);
+    return this.formatBRL(sum);
+  });
+
+  // ─── Agrupamento por dia ───────────────────────────────────────────
+  readonly groupedByDay = computed<DayGroup[]>(() => {
+    const rows = this.filteredByMonth();
+    const buckets: Record<string, Transaction[]> = {};
+    rows.forEach((r) => {
+      const key = r.date.slice(0, 10);
+      (buckets[key] = buckets[key] || []).push(r);
+    });
+    return Object.entries(buckets)
+      .sort((a, b) => (a[0] < b[0] ? 1 : -1))
+      .map(([dayKey, rs]) => {
+        const [y, m, d] = dayKey.split('-').map(Number);
+        const date = new Date(y, m - 1, d);
+        const total = rs.reduce((s, t) => s + (t.isIncome ? t.value : -t.value), 0);
+        return {
+          dayKey,
+          day: String(d).padStart(2, '0'),
+          weekday: `${WEEKDAYS[date.getDay()]} · ${MONTH_LABELS[m - 1].toLowerCase()}`,
+          total,
+          rows: rs.sort((a, b) => (a.id < b.id ? 1 : -1)),
+        };
+      });
+  });
+
+  // ─── Cor da conta (pelo modelo Account ou fallback hash) ───────────
+  accountColor(name: string): string {
+    const meta = this.accountsWithMeta().find((a) => a.name === name);
+    if (meta) return meta.color;
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+    return FLOW_PASTEL[h % FLOW_PASTEL.length];
+  }
+
+  formatBRL(v: number): string {
+    const abs = Math.abs(v);
+    const s = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(abs);
+    return v < 0 ? '−' + s : s;
+  }
+
+  // ─── Lifecycle ─────────────────────────────────────────────────────
   ngOnInit(): void {
     if (!this.env.apiUrl) {
       this.transactionsSignal.set([...MOCK_TRANSACTIONS]);
@@ -138,6 +232,7 @@ export class TransactionsComponent implements OnInit {
     this.loadTransactionList(accounts);
   }
 
+  // ─── Mês / filtros ─────────────────────────────────────────────────
   previousMonth(): void {
     this.currentDateSignal.update(({ year, month }) => {
       if (month === 0) return { year: year - 1, month: 11 };
@@ -145,7 +240,6 @@ export class TransactionsComponent implements OnInit {
     });
     this.currentPageSignal.set(0);
   }
-
   nextMonth(): void {
     this.currentDateSignal.update(({ year, month }) => {
       if (month === 11) return { year: year + 1, month: 0 };
@@ -154,22 +248,23 @@ export class TransactionsComponent implements OnInit {
     this.currentPageSignal.set(0);
   }
 
-  setFilterDescription(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    this.filterDescriptionSignal.set(value);
+  setSelectedAccount(name: string): void {
+    this.selectedAccountSignal.set(name);
     this.currentPageSignal.set(0);
   }
 
+  setFilterDescription(event: Event): void {
+    this.filterDescriptionSignal.set((event.target as HTMLInputElement).value);
+    this.currentPageSignal.set(0);
+  }
   setFilterCategoryValue(value: string): void {
     this.filterCategorySignal.set(value);
     this.currentPageSignal.set(0);
   }
-
   setFilterAccountValue(value: string): void {
     this.filterAccountSignal.set(value);
     this.currentPageSignal.set(0);
   }
-
   setFilterTypeValue(value: string): void {
     this.filterTypeSignal.set(value as 'all' | 'income' | 'expense');
     this.currentPageSignal.set(0);
@@ -178,7 +273,6 @@ export class TransactionsComponent implements OnInit {
   prevPage(): void {
     this.currentPageSignal.update((p) => Math.max(0, p - 1));
   }
-
   nextPage(): void {
     this.currentPageSignal.update((p) => Math.min(this.totalPages() - 1, p + 1));
   }
@@ -186,6 +280,15 @@ export class TransactionsComponent implements OnInit {
   formatDate(iso: string): string {
     const [y, m, d] = iso.split('-');
     return `${d}/${m}`;
+  }
+
+  openImport(): void {
+    this.showImportModal.set(true);
+  }
+
+  onImportDone(): void {
+    this.showImportModal.set(false);
+    this.refreshTransactions();
   }
 
   private getInitialDate(): { year: number; month: number } {

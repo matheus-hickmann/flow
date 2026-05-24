@@ -2,8 +2,75 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Cores do tema vêm exclusivamente de tailwind.config.js (design tokens). */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap');
+
+/* ─── Design tokens ─────────────────────────────────────────────────
+   Cores principais ficam em tailwind.config.js. As variáveis abaixo
+   são apenas para uso direto em SCSS/CSS (ex: ::before, gradientes).
+   ─────────────────────────────────────────────────────────────────── */
+:root {
+  --flow-bg:        #f5f0e6;
+  --flow-paper:     #fbf8f1;
+  --flow-ink:       #1d1a16;
+  --flow-ink-soft:  #6b665e;
+  --flow-ink-mute:  #9a9389;
+  --flow-line:      #e3ddcf;
+  --flow-line-soft: #ecead8;
+  --flow-mint:      #cce8d6;
+  --flow-peach:     #f4d8c7;
+  --flow-butter:    #f3e9b9;
+  --flow-lilac:     #dcd2ec;
+  --flow-rose:      #edd1d6;
+  --flow-sage:      #cdd9be;
+  --flow-sky:       #cfdfeb;
+  --flow-pos:       #2c6b3d;
+  --flow-neg:       #a84439;
+}
 
 body {
-  @apply bg-neutral-50 text-neutral-800 font-sans;
+  @apply text-neutral-800;
+  background: var(--flow-bg);
+  font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'ss01', 'cv11';
 }
+
+/* Tipografia editorial */
+.font-serif-display {
+  font-family: 'Instrument Serif', 'Times New Roman', serif;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+.font-mono-num {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Eyebrow / Label uppercase mono */
+.label-eyebrow {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 10px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 500;
+  color: var(--flow-ink-soft);
+}
+
+/* Pastel surfaces — ainda podem ser usadas via @apply nas Tailwind classes */
+.bg-flow-paper { background: var(--flow-paper); }
+.bg-flow-bg { background: var(--flow-bg); }
+.border-flow { border-color: var(--flow-line); }
+.border-flow-soft { border-color: var(--flow-line-soft); }
+
+/* Scrollbar discreta */
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb { background: var(--flow-line); border-radius: 99px; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* Privacy mode (opcional) — adicione a classe .privacy ao <body> */
+.privacy .font-mono-num {
+  filter: blur(7px);
+  transition: filter .2s;
+}
+.privacy .font-mono-num:hover { filter: blur(0); }
