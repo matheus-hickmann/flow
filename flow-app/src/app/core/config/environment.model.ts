@@ -12,4 +12,6 @@ export interface Environment {
   readonly dashboardApiUrl: string;
   /** Account API (recovery questions). Account-service. */
   readonly accountApiUrl: string;
+  /** Public-facing origin for absolute OG/social meta URLs (e.g. https://app.example.com). */
+  readonly appUrl: string;
 }

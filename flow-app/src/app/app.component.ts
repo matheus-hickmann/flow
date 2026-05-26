@@ -1,5 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { Meta } from '@angular/platform-browser';
 
 import { ARIA_LABELS, FAB_OPTIONS } from './core/constants/app.constants';
 import type { Account } from './core';
@@ -38,6 +39,7 @@ export class AppComponent implements OnInit {
   private readonly planningService = inject(PlanningService);
   private readonly dashboardService = inject(DashboardService);
   private readonly env = inject(ENVIRONMENT);
+  private readonly meta = inject(Meta);
   protected readonly authService = inject(AuthService);
 
   private readonly isFabOpenSignal = signal(false);
@@ -55,6 +57,11 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.authService.refreshUserFromBackend();
+    if (this.env.appUrl) {
+      const ogImage = `${this.env.appUrl}/assets/og.svg`;
+      this.meta.updateTag({ property: 'og:image', content: ogImage });
+      this.meta.updateTag({ name: 'twitter:image', content: ogImage });
+    }
   }
 
   toggleFab(): void {

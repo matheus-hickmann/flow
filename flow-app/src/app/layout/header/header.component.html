@@ -12,7 +12,9 @@
       </svg>
     }
   </button>
-  <a [routerLink]="routes.DASHBOARD" class="text-lg font-bold text-secondary dark:text-primary tracking-tight">{{ appName }}</a>
+  <a [routerLink]="routes.DASHBOARD" class="flex items-center text-neutral-900 dark:text-white">
+    <flow-mark variant="wordmark" [height]="28" />
+  </a>
 </div>
 
 <!-- Backdrop (mobile) -->
@@ -29,7 +31,9 @@
   <!-- Logo -->
   <div class="h-16 flex items-center px-6 border-b border-neutral-200 dark:border-neutral-700 shrink-0">
     <a [routerLink]="routes.DASHBOARD" (click)="closeMobile()"
-       class="text-xl font-bold text-secondary dark:text-primary tracking-tight">{{ appName }}</a>
+       class="flex items-center text-neutral-900 dark:text-white">
+      <flow-mark variant="wordmark" [height]="32" />
+    </a>
   </div>
 
   <!-- Navigation -->
@@ -83,6 +87,36 @@
               d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2z" />
       </svg>
       <span>Categorias</span>
+    </a>
+
+    <a [routerLink]="routes.FAMILY" routerLinkActive="bg-primary-light dark:bg-primary/20 text-primary font-semibold"
+       (click)="closeMobile()"
+       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+      <span>Família</span>
+    </a>
+
+    <a [routerLink]="routes.DEBTS" routerLinkActive="bg-primary-light dark:bg-primary/20 text-primary font-semibold"
+       (click)="closeMobile()"
+       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+      </svg>
+      <span>Dívidas</span>
+    </a>
+
+    <a [routerLink]="routes.PROJECTIONS" routerLinkActive="bg-primary-light dark:bg-primary/20 text-primary font-semibold"
+       (click)="closeMobile()"
+       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+      </svg>
+      <span>Projeções</span>
     </a>
   </nav>
 

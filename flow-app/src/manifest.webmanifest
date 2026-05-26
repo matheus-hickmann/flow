@@ -1,0 +1,22 @@
+{
+  "name": "flow",
+  "short_name": "flow",
+  "description": "Finanças pessoais com clareza.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1d1a16",
+  "theme_color": "#1d1a16",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml"
+    }
+  ]
+}

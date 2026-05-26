@@ -1,10 +1,18 @@
-# Dependencies
+# Frontend
 node_modules/
-
-# Build / cache
 dist/
 .angular/
 *.tsbuildinfo
+test-results/
+playwright-report/
+
+# Backend
+bin/
+tmp/
+bootstrap
+coverage.out
+*.test
+*.out
 
 # IDE
 .idea/
@@ -13,18 +21,17 @@ dist/
 *.ipr
 *.iws
 
-# Logs and temp
+# OS
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+
+# Logs
 logs/
 *.log
 npm-debug.log*
-.DS_Store
-Thumbs.db
 
-# Java / Maven
-target/
-!.mvn/wrapper/maven-wrapper.jar
-
-# Env / secrets
+# Secrets / env
 .env
 .env.local
 *.pem

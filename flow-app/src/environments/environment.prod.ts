@@ -7,4 +7,5 @@ export const environment = {
   planningApiUrl: '',
   dashboardApiUrl: '',
   accountApiUrl: '',
+  appUrl: '', // set to the public HTTPS origin, e.g. https://flow.example.com
 };

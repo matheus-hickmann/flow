@@ -1,0 +1,72 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-6">
+  <div class="w-full max-w-sm">
+
+    @if (loading()) {
+      <div class="text-center text-gray-500 dark:text-gray-400">Carregando convite...</div>
+    } @else if (done()) {
+      <div class="rounded-2xl bg-white dark:bg-gray-800 p-8 shadow-xl text-center space-y-4">
+        <div class="text-4xl">🎉</div>
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Bem-vindo ao grupo!</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Você agora pode visualizar as contas compartilhadas dos membros.</p>
+        <button
+          (click)="goToFamily()"
+          class="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+          Ver grupo familiar
+        </button>
+      </div>
+    } @else if (!preview() || !preview()!.valid) {
+      <div class="rounded-2xl bg-white dark:bg-gray-800 p-8 shadow-xl text-center space-y-4">
+        <div class="text-4xl">❌</div>
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white">Convite inválido</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Este convite não existe, expirou ou já foi utilizado.
+        </p>
+      </div>
+    } @else {
+      <div class="rounded-2xl bg-white dark:bg-gray-800 p-8 shadow-xl space-y-6">
+        <div class="text-center">
+          <div class="text-4xl mb-3">👨‍👩‍👧</div>
+          <h1 class="text-xl font-bold text-gray-900 dark:text-white">Convite para grupo familiar</h1>
+        </div>
+
+        <div class="rounded-xl bg-gray-50 dark:bg-gray-900 p-4 space-y-2">
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-500 dark:text-gray-400">Grupo</span>
+            <span class="font-medium text-gray-900 dark:text-white">{{ preview()!.groupName }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-500 dark:text-gray-400">Convidado por</span>
+            <span class="font-medium text-gray-900 dark:text-white">{{ preview()!.inviterName }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-500 dark:text-gray-400">Expira em</span>
+            <span class="font-medium text-gray-900 dark:text-white">{{ preview()!.expiresAt | slice:0:10 }}</span>
+          </div>
+        </div>
+
+        @if (error()) {
+          <p class="text-sm text-red-600 text-center">{{ error() }}</p>
+        }
+
+        @if (isLoggedIn()) {
+          <button
+            (click)="accept()"
+            [disabled]="accepting()"
+            class="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+            {{ accepting() ? 'Entrando...' : 'Entrar no grupo' }}
+          </button>
+        } @else {
+          <div class="space-y-2">
+            <p class="text-xs text-gray-500 dark:text-gray-400 text-center">Você precisa estar logado para aceitar o convite.</p>
+            <button
+              (click)="accept()"
+              class="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+              Fazer login para aceitar
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+</div>

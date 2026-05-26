@@ -1,0 +1,7 @@
+bin/
+tmp/
+*.zip
+.git
+.idea
+.vscode
+README.md

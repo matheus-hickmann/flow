@@ -38,4 +38,27 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/categories/categories.component').then((m) => m.CategoriesComponent),
   },
+  {
+    path: ROUTES.FAMILY,
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/family/family.component').then((m) => m.FamilyComponent),
+  },
+  {
+    path: ROUTES.DEBTS,
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/debts/debts.component').then((m) => m.DebtsComponent),
+  },
+  {
+    path: ROUTES.PROJECTIONS,
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/projections/projections.component').then((m) => m.ProjectionsComponent),
+  },
+  {
+    path: 'entrar/:token',
+    loadComponent: () =>
+      import('./pages/join-group/join-group.component').then((m) => m.JoinGroupComponent),
+  },
 ];

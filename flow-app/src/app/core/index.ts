@@ -1,6 +1,6 @@
 export { ENVIRONMENT } from './config';
 export type { Environment } from './config';
-export type { Account, CreateAccountPayload, AdjustBalancePayload, RenameAccountPayload } from './models/account.model';
+export type { Account, CreateAccountPayload, AdjustBalancePayload, RenameAccountPayload, UpdateAccountPayload } from './models/account.model';
 export type { Transaction, TransactionFilters } from './models/transaction.model';
 export type {
   BudgetVsActualItem,
@@ -25,6 +25,10 @@ export { ThemeService } from './services/theme.service';
 export { CategoryService, type CategoryItem, type CategoryList, DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from './services/category.service';
 export { ReportService, type MonthlyReport, type CategorySeries } from './services/report.service';
 export { ImportService, type ParsedRow, type MerchantRule, type ImportPreviewResponse, type ImportCommitRequest, type ImportCommitResponse } from './services/import.service';
+export { FamilyService } from './services/family.service';
+export type { Group, GroupMember, Invite, InvitePreview, SharedAccount } from './models/family.model';
+export { DebtService } from './services/debt.service';
+export type { Debt, CreateDebtPayload, DebtPaymentPayload } from './models/debt.model';
 export type {
   EntryResponseDto,
   PostTransactionRequestDto,

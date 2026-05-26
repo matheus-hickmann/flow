@@ -7,6 +7,7 @@ export interface Account {
   readonly color: string;
   readonly isSystem?: boolean;
   readonly investment?: boolean;
+  readonly shared?: boolean;
   readonly annualRate?: number;
   readonly brand?: string;
   readonly limit?: number;
@@ -35,6 +36,18 @@ export interface RenameAccountPayload {
   readonly name: string;
   readonly color?: string;
   readonly investment?: boolean;
+  readonly annualRate?: number;
+  readonly brand?: string;
+  readonly limit?: number;
+  readonly closingDay?: number;
+  readonly dueDay?: number;
+}
+
+export interface UpdateAccountPayload {
+  readonly name?: string;
+  readonly color?: string;
+  readonly investment?: boolean;
+  readonly shared?: boolean;
   readonly annualRate?: number;
   readonly brand?: string;
   readonly limit?: number;

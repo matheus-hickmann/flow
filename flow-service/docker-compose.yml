@@ -1,0 +1,50 @@
+# Local full stack: DynamoDB Local + table init + Go backend.
+# Bring up with: docker compose up
+
+services:
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    container_name: flow-go-dynamodb
+    command: -jar DynamoDBLocal.jar -inMemory -sharedDb
+    ports:
+      - "8000:8000"
+
+  dynamodb-init:
+    image: amazon/aws-cli:latest
+    container_name: flow-go-dynamodb-init
+    depends_on:
+      - dynamodb
+    environment:
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      AWS_DEFAULT_REGION: us-east-1
+    volumes:
+      - ./scripts/init-dynamodb.sh:/init-dynamodb.sh:ro
+    entrypoint: ["/bin/sh", "/init-dynamodb.sh"]
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: flow-go-backend
+    ports:
+      - "8080:8080"
+    environment:
+      DYNAMODB_ENDPOINT: http://dynamodb:8000
+      AWS_REGION: us-east-1
+      TABLE_NAME: flow-table
+      PORT: "8080"
+      CORS_ORIGIN: http://localhost:4200
+    depends_on:
+      dynamodb-init:
+        condition: service_completed_successfully
+    volumes:
+      - ./cmd:/app/cmd
+      - ./internal:/app/internal
+      - ./go.mod:/app/go.mod
+      - ./go.sum:/app/go.sum
+      - ./.air.toml:/app/.air.toml
+      - go-mod-cache:/go/pkg/mod
+
+volumes:
+  go-mod-cache:

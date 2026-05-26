@@ -1,24 +1,22 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { AuthService } from '../../core/services/auth.service';
 import { ENVIRONMENT } from '../../core/config';
+import { FlowMarkComponent } from '../../shared';
 
 @Component({
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, FlowMarkComponent],
   template: `
     <div class="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
       <div class="w-full max-w-sm space-y-8">
         <div class="text-center">
-          <img
-            src="assets/futureflow-logo.png"
-            alt="Future Flow"
-            class="mx-auto h-20 w-auto object-contain"
-          />
+          <div class="flex justify-center text-neutral-900">
+            <flow-mark variant="wordmark" [height]="48" />
+          </div>
           <h1 class="mt-6 text-2xl font-bold text-neutral-900">Entrar</h1>
-          <p class="mt-1 text-sm text-neutral-600">{{ appName }}</p>
         </div>
         <form (ngSubmit)="onSubmit()" class="space-y-6 rounded-xl bg-white p-6 shadow-sm border border-neutral-200">
           @if (errorMessage()) {
@@ -67,6 +65,7 @@ import { ENVIRONMENT } from '../../core/config';
 export class LoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   protected readonly appName = inject(ENVIRONMENT).appName;
 
   userId = '';
@@ -78,7 +77,10 @@ export class LoginComponent {
     this.errorMessage.set(null);
     this.loading.set(true);
     this.auth.login({ userId: this.userId.trim(), password: this.password }).subscribe({
-      next: () => this.router.navigate(['/']),
+      next: () => {
+        const redirect = this.route.snapshot.queryParamMap.get('redirect');
+        this.router.navigateByUrl(redirect ?? '/');
+      },
       error: (err) => {
         this.loading.set(false);
         const msg = err?.error?.message ?? err?.message ?? 'ID de usuário ou senha inválidos.';

@@ -12,7 +12,7 @@ test.describe('Autenticação', () => {
     await page.fill('#userId', 'INVALIDO123456');
     await page.fill('#password', 'senha_errada');
     await page.click('button[type="submit"]');
-    await expect(page.locator('[class*="red"]').first()).toBeVisible();
+    await expect(page.locator('.text-red-700').first()).toBeVisible();
   });
 
   test('deve gerar um userId de 12 caracteres na tela de cadastro', async ({ page }) => {
@@ -41,6 +41,6 @@ test.describe('Autenticação', () => {
     await page.goto('/criar-conta');
     await page.fill('#password', 'Senha@123');
     await page.click('button[type="submit"]');
-    await expect(page.locator('[class*="red"]').first()).toBeVisible();
+    await expect(page.locator('.text-red-700').first()).toBeVisible();
   });
 });

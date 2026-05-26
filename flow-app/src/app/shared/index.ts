@@ -1,2 +1,2 @@
 export { CurrencyBrlPipe } from './pipes';
-export { ModalComponent, DropdownComponent } from './components';
+export { ModalComponent, DropdownComponent, FlowMarkComponent } from './components';

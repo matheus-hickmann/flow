@@ -5,11 +5,12 @@ import { ROUTES } from '../../core/constants/app.constants';
 import { ENVIRONMENT } from '../../core/config';
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
+import { FlowMarkComponent } from '../../shared';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, FlowMarkComponent],
   templateUrl: './header.component.html',
 })
 export class HeaderComponent {

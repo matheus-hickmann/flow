@@ -1,0 +1,254 @@
+<div class="font-sans space-y-6">
+
+  <!-- ─── Sub-header ─────────────────────────────────────────────── -->
+  <div class="flex items-center justify-between pb-4 border-b border-flow">
+    <div class="flex items-center gap-4">
+      <span class="label-eyebrow">FAMÍLIA</span>
+      <h1 class="font-serif text-3xl m-0">Família</h1>
+    </div>
+    <button (click)="openCreateGroup()"
+            class="h-8 inline-flex items-center gap-1.5 px-3 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
+            style="background: var(--flow-ink); color: var(--flow-bg)">
+      + Novo grupo
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="bg-flow-paper border border-flow rounded-2xl p-10 text-center">
+      <span class="label-eyebrow">Carregando…</span>
+    </div>
+  } @else if (error()) {
+    <p class="font-mono-num text-[11px] text-flow-neg">{{ error() }}</p>
+  } @else if (groups().length === 0) {
+    <div class="bg-flow-paper border border-dashed border-flow rounded-2xl p-12 text-center">
+      <p class="text-sm text-flow-ink-mute">Você ainda não faz parte de nenhum grupo familiar.</p>
+      <button (click)="openCreateGroup()"
+              class="mt-4 h-8 inline-flex items-center gap-1.5 px-3 rounded-lg border border-flow text-xs text-flow-ink-soft hover:bg-flow-bg transition-colors">
+        Criar meu primeiro grupo
+      </button>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+
+      <!-- Sidebar: lista de grupos -->
+      <div class="flex flex-col gap-1.5">
+        @for (group of groups(); track trackByGroupId($index, group)) {
+          <button (click)="selectGroup(group)"
+                  class="w-full text-left rounded-xl border px-4 py-3 transition-colors"
+                  [class.bg-flow-paper]="selectedGroup()?.id === group.id"
+                  [class.border-flow-ink]="selectedGroup()?.id === group.id"
+                  [class.border-flow]="selectedGroup()?.id !== group.id"
+                  [class.hover:bg-flow-paper]="selectedGroup()?.id !== group.id">
+            <p class="text-[13px] font-medium" style="color: var(--flow-ink)">{{ group.name }}</p>
+          </button>
+        }
+      </div>
+
+      <!-- Detalhe do grupo -->
+      @if (selectedGroup(); as group) {
+        <div class="lg:col-span-2 space-y-4">
+
+          <!-- Cabeçalho do grupo -->
+          <div class="flex items-center justify-between bg-flow-paper border border-flow rounded-2xl px-5 py-4">
+            <div>
+              <span class="label-eyebrow">{{ isOwner() ? 'SEU GRUPO' : 'GRUPO' }}</span>
+              <h2 class="font-serif text-2xl mt-0.5">{{ group.name }}</h2>
+              <p class="font-mono-num text-[10px] text-flow-ink-mute mt-0.5">Criado em {{ group.createdAt | slice:0:10 }}</p>
+            </div>
+            @if (isOwner()) {
+              <button (click)="deleteGroup(group)"
+                      class="font-mono-num text-xs text-flow-neg hover:opacity-75 transition-opacity">
+                Excluir grupo
+              </button>
+            }
+          </div>
+
+          <!-- Membros -->
+          <div class="bg-flow-paper border border-flow rounded-2xl overflow-hidden">
+            <header class="px-5 py-3.5 border-b border-flow-soft">
+              <span class="label-eyebrow">Membros · {{ (group.members ?? []).length }}</span>
+            </header>
+            <ul class="divide-y divide-flow-line-soft">
+              @for (member of (group.members ?? []); track trackByUserId($index, member)) {
+                <li class="flex items-center justify-between px-5 py-3">
+                  <div class="flex items-center gap-3">
+                    <div class="h-8 w-8 rounded-full bg-flow-sky flex items-center justify-center text-flow-sky-ink text-sm font-bold shrink-0">
+                      {{ member.displayName.charAt(0).toUpperCase() }}
+                    </div>
+                    <div>
+                      <p class="text-[13px] font-medium" style="color: var(--flow-ink)">{{ member.displayName }}</p>
+                      <p class="font-mono-num text-[10px] text-flow-ink-mute">{{ member.role === 'owner' ? 'Dono' : 'Membro' }}</p>
+                    </div>
+                  </div>
+                  @if (isOwner() && member.userId !== currentUserId()) {
+                    <button (click)="removeMember(member.userId)"
+                            class="font-mono-num text-[10px] text-flow-neg hover:opacity-75 transition-opacity">
+                      Remover
+                    </button>
+                  }
+                </li>
+              }
+            </ul>
+          </div>
+
+          <!-- Convites (somente dono) -->
+          @if (isOwner()) {
+            <div class="bg-flow-paper border border-flow rounded-2xl overflow-hidden">
+              <header class="flex items-center justify-between px-5 py-3.5 border-b border-flow-soft">
+                <span class="label-eyebrow">Convites pendentes</span>
+                <button (click)="openCreateInvite()"
+                        class="font-mono-num text-[11px] text-flow-ink-soft hover:text-flow-ink transition-colors">
+                  + Gerar convite
+                </button>
+              </header>
+              @if (pendingInvites().length === 0) {
+                <p class="px-5 py-4 font-mono-num text-[11px] text-flow-ink-mute">Nenhum convite pendente.</p>
+              } @else {
+                <ul class="divide-y divide-flow-line-soft">
+                  @for (invite of pendingInvites(); track trackByToken($index, invite)) {
+                    <li class="flex items-center justify-between px-5 py-3">
+                      <span class="text-[12px]" style="color: var(--flow-ink)">{{ invite.inviteeLabel || 'Sem etiqueta' }}</span>
+                      <button (click)="revokeInvite(invite)"
+                              class="font-mono-num text-[10px] text-flow-neg hover:opacity-75 transition-opacity">
+                        Revogar
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          }
+
+          <!-- Contas compartilhadas -->
+          @if (sharedAccounts().length > 0) {
+            <div class="bg-flow-paper border border-flow rounded-2xl overflow-hidden">
+              <header class="px-5 py-3.5 border-b border-flow-soft">
+                <span class="label-eyebrow">Contas compartilhadas</span>
+              </header>
+              <ul class="divide-y divide-flow-line-soft">
+                @for (acc of sharedAccounts(); track trackByAccountId($index, acc)) {
+                  <li class="flex items-center justify-between px-5 py-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <span class="h-3 w-3 rounded-full shrink-0" [style.background-color]="acc.color"></span>
+                      <div class="min-w-0">
+                        <p class="text-[13px] font-medium truncate" style="color: var(--flow-ink)">{{ acc.name }}</p>
+                        <p class="font-mono-num text-[10px] text-flow-ink-mute">{{ acc.ownerName }}</p>
+                      </div>
+                    </div>
+                    <span class="font-mono-num text-sm font-medium shrink-0"
+                          [class.text-flow-pos]="acc.balance >= 0"
+                          [class.text-flow-neg]="acc.balance < 0">
+                      {{ acc.balance | currencyBrl }}
+                    </span>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+
+        </div>
+      }
+
+    </div>
+  }
+
+</div>
+
+<!-- ─── Modal: Novo grupo ────────────────────────────────────────── -->
+@if (showCreateGroup()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,.5)">
+    <div class="w-full max-w-sm rounded-2xl overflow-hidden"
+         style="background: var(--flow-paper); border: 1px solid var(--flow-line); box-shadow: var(--flow-shadow-card)">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-flow">
+        <div>
+          <span class="label-eyebrow">GRUPO</span>
+          <h2 class="font-serif text-2xl mt-0.5">Novo grupo familiar</h2>
+        </div>
+      </div>
+      <div class="px-6 py-5 space-y-4">
+        <div>
+          <label class="label-eyebrow block mb-1">Nome do grupo</label>
+          <input type="text"
+                 [value]="newGroupName()"
+                 (input)="newGroupName.set($any($event.target).value)"
+                 placeholder="Ex: Família Silva"
+                 class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                 style="background: var(--flow-bg); color: var(--flow-ink)" />
+          @if (createGroupError()) {
+            <p class="mt-1 font-mono-num text-[11px] text-flow-neg">{{ createGroupError() }}</p>
+          }
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button (click)="showCreateGroup.set(false)"
+                  class="flex-1 h-9 rounded-xl border border-flow text-sm font-medium hover:bg-flow-bg transition-colors text-flow-ink-soft">
+            Cancelar
+          </button>
+          <button (click)="submitCreateGroup()"
+                  class="flex-1 h-9 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                  style="background: var(--flow-ink); color: var(--flow-bg)">
+            Criar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ─── Modal: Gerar convite ────────────────────────────────────── -->
+@if (showCreateInvite()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,.5)">
+    <div class="w-full max-w-sm rounded-2xl overflow-hidden"
+         style="background: var(--flow-paper); border: 1px solid var(--flow-line); box-shadow: var(--flow-shadow-card)">
+      <div class="px-6 py-4 border-b border-flow">
+        <span class="label-eyebrow">CONVITE</span>
+        <h2 class="font-serif text-2xl mt-0.5">Gerar convite</h2>
+      </div>
+
+      @if (createdInviteLink(); as link) {
+        <div class="px-6 py-5 space-y-4">
+          <p class="text-sm text-flow-ink-soft">Convite gerado! Copie e compartilhe o link:</p>
+          <div class="flex items-center gap-2 rounded-xl border border-flow px-3 py-2" style="background: var(--flow-bg)">
+            <span class="flex-1 font-mono-num text-xs truncate" style="color: var(--flow-ink)">{{ link }}</span>
+            <button (click)="copyLink(link)"
+                    class="font-mono-num text-[11px] text-flow-ink-soft hover:text-flow-ink shrink-0 transition-colors">
+              Copiar
+            </button>
+          </div>
+          <div class="flex justify-end pt-2">
+            <button (click)="showCreateInvite.set(false)"
+                    class="h-9 px-4 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                    style="background: var(--flow-ink); color: var(--flow-bg)">
+              Fechar
+            </button>
+          </div>
+        </div>
+      } @else {
+        <div class="px-6 py-5 space-y-4">
+          <div>
+            <label class="label-eyebrow block mb-1">Etiqueta (opcional)</label>
+            <input type="text"
+                   [value]="newInviteeLabel()"
+                   (input)="newInviteeLabel.set($any($event.target).value)"
+                   placeholder="Ex: Ana - esposa"
+                   class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                   style="background: var(--flow-bg); color: var(--flow-ink)" />
+            @if (createInviteError()) {
+              <p class="mt-1 font-mono-num text-[11px] text-flow-neg">{{ createInviteError() }}</p>
+            }
+          </div>
+          <div class="flex gap-3 pt-2">
+            <button (click)="showCreateInvite.set(false)"
+                    class="flex-1 h-9 rounded-xl border border-flow text-sm font-medium hover:bg-flow-bg transition-colors text-flow-ink-soft">
+              Cancelar
+            </button>
+            <button (click)="submitCreateInvite()"
+                    class="flex-1 h-9 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                    style="background: var(--flow-ink); color: var(--flow-bg)">
+              Gerar
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}
