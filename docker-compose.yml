@@ -1,8 +1,5 @@
 # Local full-stack: DynamoDB Local + table init + Go backend + Angular frontend.
 # Bring everything up with: docker compose up
-#
-# The Go backend lives in a sibling repo (../flow-service-go) and is mounted
-# read/write so `air` reloads on file changes.
 
 services:
   dynamodb:
@@ -27,7 +24,7 @@ services:
 
   backend:
     build:
-      context: ../flow-service-go
+      context: ./flow-service
       dockerfile: Dockerfile.dev
     container_name: flow-backend
     ports:
@@ -42,11 +39,11 @@ services:
       dynamodb-init:
         condition: service_completed_successfully
     volumes:
-      - ../flow-service-go/cmd:/app/cmd
-      - ../flow-service-go/internal:/app/internal
-      - ../flow-service-go/go.mod:/app/go.mod
-      - ../flow-service-go/go.sum:/app/go.sum
-      - ../flow-service-go/.air.toml:/app/.air.toml
+      - ./flow-service/cmd:/app/cmd
+      - ./flow-service/internal:/app/internal
+      - ./flow-service/go.mod:/app/go.mod
+      - ./flow-service/go.sum:/app/go.sum
+      - ./flow-service/.air.toml:/app/.air.toml
       - flow-go-mod-cache:/go/pkg/mod
 
   frontend:

@@ -1,0 +1,10 @@
+bin/
+tmp/
+*.zip
+bootstrap
+.DS_Store
+.idea/
+.vscode/
+coverage.out
+*.test
+*.out
