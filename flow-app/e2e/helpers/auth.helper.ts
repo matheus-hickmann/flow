@@ -16,13 +16,12 @@ export async function signupNew(page: Page): Promise<{ userId: string; password:
   await page.fill('#displayName', 'Teste E2E');
   await page.fill('#password', password);
 
-  // fill recovery questions
+  // fill recovery questions using index-based selection (index 0 is the disabled placeholder)
   const selects = page.locator('select[name^="question"]');
   const inputs = page.locator('input[name^="answer"]');
-  const questions = ['Qual o nome do seu primeiro animal de estimação?', 'Em qual cidade você nasceu?', 'Qual o nome da sua escola primária?'];
   for (let i = 0; i < 3; i++) {
-    await selects.nth(i).selectOption(questions[i]);
-    await inputs.nth(i).fill(`resposta${i}`);
+    await selects.nth(i).selectOption({ index: i + 1 });
+    await inputs.nth(i).fill(`resposta${i + 1}`);
   }
 
   await page.click('button[type="submit"]');

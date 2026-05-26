@@ -7,4 +7,5 @@ export const environment = {
   planningApiUrl: 'http://localhost:8080',
   dashboardApiUrl: 'http://localhost:8080',
   accountApiUrl: 'http://localhost:8080',
+  appUrl: 'http://localhost:4200',
 };

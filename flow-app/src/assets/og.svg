@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <!-- background -->
+  <rect width="1200" height="630" fill="#1d1a16"/>
+
+  <!-- wordmark "flow" in Instrument Serif italic -->
+  <text x="600" y="330"
+        font-family="'Georgia','Times New Roman',serif"
+        font-style="italic"
+        font-weight="400"
+        font-size="220"
+        letter-spacing="-4"
+        text-anchor="middle"
+        fill="#efeae0">flow</text>
+
+  <!-- accent curve below wordmark -->
+  <g fill="#efeae0" stroke="#efeae0">
+    <path d="M 340 390 C 440 406, 570 406, 600 403 C 660 400, 730 380, 800 358"
+          fill="none" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="340" cy="390" r="6" stroke="none"/>
+    <circle cx="600" cy="403" r="6" stroke="none"/>
+    <circle cx="800" cy="358" r="6" stroke="none"/>
+  </g>
+
+  <!-- tagline -->
+  <text x="600" y="470"
+        font-family="'Courier New',monospace"
+        font-size="22"
+        letter-spacing="6"
+        text-anchor="middle"
+        fill="#6b665e">FINANÇAS PESSOAIS</text>
+</svg>

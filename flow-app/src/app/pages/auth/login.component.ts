@@ -4,21 +4,19 @@ import { FormsModule } from '@angular/forms';
 
 import { AuthService } from '../../core/services/auth.service';
 import { ENVIRONMENT } from '../../core/config';
+import { FlowMarkComponent } from '../../shared';
 
 @Component({
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, FlowMarkComponent],
   template: `
     <div class="min-h-screen flex items-center justify-center bg-neutral-50 px-4">
       <div class="w-full max-w-sm space-y-8">
         <div class="text-center">
-          <img
-            src="assets/futureflow-logo.png"
-            alt="Future Flow"
-            class="mx-auto h-20 w-auto object-contain"
-          />
+          <div class="flex justify-center text-neutral-900">
+            <flow-mark variant="wordmark" [height]="48" />
+          </div>
           <h1 class="mt-6 text-2xl font-bold text-neutral-900">Entrar</h1>
-          <p class="mt-1 text-sm text-neutral-600">{{ appName }}</p>
         </div>
         <form (ngSubmit)="onSubmit()" class="space-y-6 rounded-xl bg-white p-6 shadow-sm border border-neutral-200">
           @if (errorMessage()) {

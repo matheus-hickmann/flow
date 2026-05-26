@@ -27,6 +27,8 @@ export { ReportService, type MonthlyReport, type CategorySeries } from './servic
 export { ImportService, type ParsedRow, type MerchantRule, type ImportPreviewResponse, type ImportCommitRequest, type ImportCommitResponse } from './services/import.service';
 export { FamilyService } from './services/family.service';
 export type { Group, GroupMember, Invite, InvitePreview, SharedAccount } from './models/family.model';
+export { DebtService } from './services/debt.service';
+export type { Debt, CreateDebtPayload, DebtPaymentPayload } from './models/debt.model';
 export type {
   EntryResponseDto,
   PostTransactionRequestDto,

@@ -1,6 +1,11 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
+  "cli": {
+    "cache": {
+      "path": "/tmp/ng-cache"
+    }
+  },
   "newProjectRoot": "projects",
   "projects": {
     "flow-app": {
@@ -24,7 +29,7 @@
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "assets": ["src/assets"],
+            "assets": ["src/favicon.svg", "src/apple-touch-icon.svg", "src/manifest.webmanifest", "src/assets"],
             "styles": ["src/styles.scss"],
             "scripts": []
           },

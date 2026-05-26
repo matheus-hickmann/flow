@@ -1,86 +1,95 @@
-<div class="space-y-6">
-  <div class="flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-neutral-800">Contas</h1>
-    <button type="button"
-            (click)="openCreateModal()"
-            class="rounded-lg bg-primary px-4 py-2 text-white hover:opacity-90 transition-colors">
-      Nova conta
+<div class="font-sans space-y-6">
+
+  <!-- ─── Sub-header ─────────────────────────────────────────────── -->
+  <div class="flex items-center justify-between pb-4 border-b border-flow">
+    <div class="flex items-center gap-4">
+      <span class="label-eyebrow">CONTAS</span>
+      <h1 class="font-serif text-3xl m-0">Contas</h1>
+    </div>
+    <button type="button" (click)="openCreateModal()"
+            class="h-8 inline-flex items-center gap-1.5 px-3 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
+            style="background: var(--flow-ink); color: var(--flow-bg)">
+      + Nova conta
     </button>
   </div>
 
   @if (loading()) {
-    <p class="text-neutral-600">Carregando contas...</p>
+    <div class="bg-flow-paper border border-flow rounded-2xl p-10 text-center">
+      <span class="label-eyebrow">Carregando…</span>
+    </div>
   } @else if (error()) {
-    <p class="text-danger">{{ error() }}</p>
+    <p class="font-mono-num text-[11px] text-flow-neg">{{ error() }}</p>
   } @else {
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       @for (account of accounts(); track account.id) {
-        <article class="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+        <article class="bg-flow-paper border border-flow rounded-2xl p-5 flex flex-col gap-3">
           <div class="flex items-start justify-between gap-2">
             <div class="flex min-w-0 flex-1 items-center gap-3">
-              <span class="h-4 w-4 shrink-0 rounded-full border border-neutral-200"
+              <span class="h-4 w-4 shrink-0 rounded-full border border-flow"
                     [style.background]="account.color"
                     [attr.aria-label]="'Cor da conta ' + account.name"></span>
               <div class="min-w-0">
-                <h2 class="font-semibold text-neutral-800 truncate">{{ account.name }}</h2>
-                <p class="text-sm text-neutral-500">{{ account.code }}</p>
+                <h2 class="text-[14px] font-medium truncate" style="color: var(--flow-ink)">{{ account.name }}</h2>
+                <p class="font-mono-num text-[11px] text-flow-ink-mute">{{ account.code }}</p>
                 @if (account.investment) {
-                  <span class="inline-block mt-1 rounded-full bg-gold-light px-2 py-0.5 text-xs font-medium text-yellow-800">
+                  <span class="inline-flex mt-1 rounded-full bg-flow-butter px-2 py-0.5 font-mono-num text-[10px] font-medium text-flow-butter-ink">
                     Investimento · {{ account.annualRate }}% a.a.
                   </span>
                 }
                 @if (account.type === 'CREDIT_CARD') {
-                  <span class="inline-block mt-1 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+                  <span class="inline-flex mt-1 rounded-full bg-flow-sky px-2 py-0.5 font-mono-num text-[10px] font-medium text-flow-sky-ink">
                     {{ account.brand }} · Limite {{ account.limit | currencyBrl }}
                   </span>
-                  <span class="inline-block mt-1 rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
+                  <span class="inline-flex mt-1 rounded-full px-2 py-0.5 font-mono-num text-[10px] text-flow-ink-soft"
+                        style="background: var(--flow-line-soft)">
                     Fecha dia {{ account.closingDay }} · Vence dia {{ account.dueDay }}
                   </span>
                 }
               </div>
             </div>
           </div>
-          <p class="mt-3 text-xl font-bold text-neutral-900">{{ account.balance | currencyBrl }}</p>
-          @if (account.type === 'CREDIT_CARD') {
-            <p class="text-xs text-neutral-500 mt-0.5">Fatura atual</p>
-          }
-          <div class="mt-4 flex items-center justify-between gap-2">
+
+          <div>
+            <p class="font-serif-display text-[28px]">{{ account.balance | currencyBrl }}</p>
+            @if (account.type === 'CREDIT_CARD') {
+              <p class="font-mono-num text-[10px] text-flow-ink-mute mt-0.5">Fatura atual</p>
+            }
+          </div>
+
+          <div class="flex items-center justify-between gap-2 mt-auto">
             @if (account.type !== 'CREDIT_CARD') {
-              <button type="button"
-                      (click)="openAdjustModal(account)"
-                      class="rounded-lg border border-neutral-300 px-3 py-1.5 text-sm text-neutral-700 hover:bg-neutral-50">
+              <button type="button" (click)="openAdjustModal(account)"
+                      class="h-7 px-3 rounded-lg border border-flow text-xs font-medium hover:bg-flow-bg transition-colors text-flow-ink-soft">
                 Ajustar saldo
               </button>
             } @else {
               <div></div>
             }
             <div class="flex gap-1">
-              <button type="button"
-                      (click)="openEditModal(account)"
-                      title="Editar conta"
-                      class="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 transition-colors">
+              <button type="button" (click)="openEditModal(account)" title="Editar conta"
+                      class="rounded-lg p-1.5 text-flow-ink-soft hover:bg-flow-bg hover:text-flow-ink transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                 </svg>
               </button>
-              <button type="button"
-                      (click)="toggleShared(account)"
+              <button type="button" (click)="toggleShared(account)"
                       [title]="account.shared ? 'Parar de compartilhar' : 'Compartilhar com família'"
-                      class="rounded-lg p-1.5 text-neutral-500 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                      class="rounded-lg p-1.5 transition-colors"
+                      [class.bg-flow-sky]="account.shared"
+                      [class.text-flow-sky-ink]="account.shared"
+                      [class.text-flow-ink-soft]="!account.shared"
+                      [class.hover:bg-flow-sky]="!account.shared">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                     [class.text-blue-600]="account.shared">
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
                   <polyline points="16 6 12 2 8 6"/>
                   <line x1="12" y1="2" x2="12" y2="15"/>
                 </svg>
               </button>
-              <button type="button"
-                      (click)="openDeleteConfirm(account)"
-                      title="Excluir conta"
-                      class="rounded-lg p-1.5 text-neutral-500 hover:bg-red-50 hover:text-danger transition-colors">
+              <button type="button" (click)="openDeleteConfirm(account)" title="Excluir conta"
+                      class="rounded-lg p-1.5 text-flow-ink-soft hover:bg-flow-rose hover:text-flow-neg transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="3 6 5 6 21 6"/>
@@ -93,126 +102,148 @@
           </div>
         </article>
       } @empty {
-        <p class="col-span-full text-neutral-600">Nenhuma conta cadastrada. Clique em &quot;Nova conta&quot; para começar.</p>
+        <div class="col-span-full bg-flow-paper border border-flow rounded-2xl p-12 text-center">
+          <p class="font-mono-num text-[11px] text-flow-ink-mute">Nenhuma conta cadastrada.</p>
+        </div>
       }
     </div>
   }
 
+  <!-- ─── Modal: Nova conta ───────────────────────────────────────── -->
   @if (showCreateModal()) {
-    <app-modal title="Nova conta" (closed)="closeCreateModal()">
+    <app-modal title="Nova conta" eyebrow="CONTA" (closed)="closeCreateModal()">
       <form (submit)="$event.preventDefault(); onSubmitCreate()" class="space-y-4">
         <div>
-          <label for="acc-name" class="block text-sm font-medium text-neutral-700 mb-1">Nome</label>
+          <label for="acc-name" class="label-eyebrow block mb-1">Nome</label>
           <input id="acc-name" type="text"
                  [value]="createName()"
                  (input)="setCreateName($event)"
-                 class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                 class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                 style="background: var(--flow-bg); color: var(--flow-ink)"
                  placeholder="Ex.: Itaú" required>
           @if (createNameError()) {
-            <p class="mt-1 text-sm text-danger">{{ createNameError() }}</p>
+            <p class="mt-1 font-mono-num text-[11px] text-flow-neg">{{ createNameError() }}</p>
           }
         </div>
+
+        <!-- Tipo de conta (tab switcher) -->
+        <div>
+          <p class="label-eyebrow block mb-2">Tipo de conta</p>
+          <div class="inline-flex border border-flow rounded-xl p-0.5 w-full" style="background: var(--flow-bg)">
+            <button type="button" (click)="setCreateKind('regular')"
+                    class="flex-1 py-2 rounded-lg text-xs font-medium transition-colors"
+                    [class.bg-flow-paper]="createKind() === 'regular'"
+                    [class.text-flow-ink]="createKind() === 'regular'"
+                    [class.text-flow-ink-soft]="createKind() !== 'regular'">
+              Corrente / Poupança
+            </button>
+            <button type="button" (click)="setCreateKind('investment')"
+                    class="flex-1 py-2 rounded-lg text-xs font-medium transition-colors"
+                    [class.bg-flow-paper]="createKind() === 'investment'"
+                    [class.text-flow-ink]="createKind() === 'investment'"
+                    [class.text-flow-ink-soft]="createKind() !== 'investment'">
+              Investimento
+            </button>
+            <button type="button" (click)="setCreateKind('credit_card')"
+                    class="flex-1 py-2 rounded-lg text-xs font-medium transition-colors"
+                    [class.bg-flow-paper]="createKind() === 'credit_card'"
+                    [class.text-flow-ink]="createKind() === 'credit_card'"
+                    [class.text-flow-ink-soft]="createKind() !== 'credit_card'">
+              Cartão de crédito
+            </button>
+          </div>
+        </div>
+
         @if (createKind() !== 'credit_card') {
           <div>
-            <label for="acc-initial" class="block text-sm font-medium text-neutral-700 mb-1">Saldo inicial (R$)</label>
+            <label for="acc-initial" class="label-eyebrow block mb-1">Saldo inicial (R$)</label>
             <input id="acc-initial" type="number" step="0.01"
                    [value]="createInitialBalance()"
                    (input)="setCreateInitialBalance($event)"
-                   class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                   class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                   style="background: var(--flow-bg); color: var(--flow-ink)"
                    placeholder="0,00">
           </div>
         }
-        <div>
-          <p class="block text-sm font-medium text-neutral-700 mb-2">Tipo de conta</p>
-          <div class="flex flex-wrap gap-3">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="acc-type" [checked]="createKind() === 'regular'"
-                     (change)="setCreateKind('regular')"
-                     class="accent-primary">
-              <span class="text-sm text-neutral-700">Corrente / Poupança</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="acc-type" [checked]="createKind() === 'investment'"
-                     (change)="setCreateKind('investment')"
-                     class="accent-primary">
-              <span class="text-sm text-neutral-700">Investimento</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="acc-type" [checked]="createKind() === 'credit_card'"
-                     (change)="setCreateKind('credit_card')"
-                     class="accent-primary">
-              <span class="text-sm text-neutral-700">Cartão de crédito</span>
-            </label>
-          </div>
-        </div>
+
         @if (createKind() === 'investment') {
           <div>
-            <label for="acc-rate" class="block text-sm font-medium text-neutral-700 mb-1">Rendimento (% a.a.)</label>
+            <label for="acc-rate" class="label-eyebrow block mb-1">Rendimento (% a.a.)</label>
             <input id="acc-rate" type="number" step="0.01" min="0"
                    [value]="createAnnualRate()"
                    (input)="setCreateAnnualRate($event)"
-                   class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                   class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                   style="background: var(--flow-bg); color: var(--flow-ink)"
                    placeholder="Ex.: 12,5">
           </div>
         }
+
         @if (createKind() === 'credit_card') {
           <div>
-            <label for="acc-brand" class="block text-sm font-medium text-neutral-700 mb-1">Bandeira</label>
+            <label for="acc-brand" class="label-eyebrow block mb-1">Bandeira</label>
             <select id="acc-brand"
                     [value]="createBrand()"
                     (change)="setCreateBrand($event)"
-                    class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary">
+                    class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                    style="background: var(--flow-bg); color: var(--flow-ink)">
               @for (brand of cardBrands; track brand) {
                 <option [value]="brand">{{ brand }}</option>
               }
             </select>
           </div>
           <div>
-            <label for="acc-limit" class="block text-sm font-medium text-neutral-700 mb-1">Limite (R$)</label>
+            <label for="acc-limit" class="label-eyebrow block mb-1">Limite (R$)</label>
             <input id="acc-limit" type="number" step="0.01" min="0"
                    [value]="createLimit()"
                    (input)="setCreateLimit($event)"
-                   class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                   class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                   style="background: var(--flow-bg); color: var(--flow-ink)"
                    placeholder="Ex.: 5000,00">
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label for="acc-closing" class="block text-sm font-medium text-neutral-700 mb-1">Dia de fechamento</label>
+              <label for="acc-closing" class="label-eyebrow block mb-1">Dia de fechamento</label>
               <input id="acc-closing" type="number" min="1" max="31"
                      [value]="createClosingDay()"
                      (input)="setCreateClosingDay($event)"
-                     class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                     class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                     style="background: var(--flow-bg); color: var(--flow-ink)"
                      placeholder="Ex.: 25">
             </div>
             <div>
-              <label for="acc-due" class="block text-sm font-medium text-neutral-700 mb-1">Dia de vencimento</label>
+              <label for="acc-due" class="label-eyebrow block mb-1">Dia de vencimento</label>
               <input id="acc-due" type="number" min="1" max="31"
                      [value]="createDueDay()"
                      (input)="setCreateDueDay($event)"
-                     class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                     class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                     style="background: var(--flow-bg); color: var(--flow-ink)"
                      placeholder="Ex.: 5">
             </div>
           </div>
         }
+
         <div>
-          <label for="acc-color" class="block text-sm font-medium text-neutral-700 mb-1">Cor (relatórios)</label>
+          <label for="acc-color" class="label-eyebrow block mb-1">Cor (relatórios)</label>
           <div class="flex items-center gap-3">
             <input id="acc-color" type="color"
                    [value]="createColor()"
                    (input)="setCreateColor($event)"
-                   class="h-10 w-14 cursor-pointer rounded border border-neutral-300">
+                   class="h-9 w-12 cursor-pointer rounded border border-flow">
             <input type="text" [value]="createColor()" (input)="setCreateColorHex($event)"
-                   class="w-24 rounded-lg border border-neutral-300 px-2 py-1.5 text-sm font-mono"
+                   class="w-24 h-9 rounded-xl border border-flow px-2 text-sm font-mono focus:outline-none"
+                   style="background: var(--flow-bg); color: var(--flow-ink)"
                    placeholder="#3b82f6" maxlength="7">
           </div>
         </div>
+
         <div class="flex gap-3 pt-2">
           <button type="button" (click)="closeCreateModal()"
-                  class="flex-1 rounded-lg border border-neutral-300 px-4 py-2 text-neutral-700 hover:bg-neutral-50">
+                  class="flex-1 h-9 rounded-xl border border-flow text-sm font-medium hover:bg-flow-bg transition-colors text-flow-ink-soft">
             Cancelar
           </button>
           <button type="submit"
-                  class="flex-1 rounded-lg bg-primary px-4 py-2 text-white hover:opacity-90 disabled:opacity-50"
+                  class="flex-1 h-9 rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  style="background: var(--flow-ink); color: var(--flow-bg)"
                   [disabled]="!canSubmitCreate()">
             Cadastrar
           </button>
@@ -221,28 +252,33 @@
     </app-modal>
   }
 
+  <!-- ─── Modal: Ajustar saldo ────────────────────────────────────── -->
   @if (showAdjustModal(); as account) {
-    <app-modal [title]="'Ajustar saldo: ' + account.name" (closed)="closeAdjustModal()">
+    <app-modal [title]="account.name" eyebrow="AJUSTAR SALDO" (closed)="closeAdjustModal()">
       <form (submit)="$event.preventDefault(); onSubmitAdjust()" class="space-y-4">
-        <p class="text-sm text-neutral-600">Saldo atual: <strong>{{ account.balance | currencyBrl }}</strong></p>
+        <p class="font-mono-num text-[12px] text-flow-ink-soft">
+          Saldo atual: <strong class="text-flow-ink">{{ account.balance | currencyBrl }}</strong>
+        </p>
         <div>
-          <label for="adj-balance" class="block text-sm font-medium text-neutral-700 mb-1">Novo saldo (R$)</label>
+          <label for="adj-balance" class="label-eyebrow block mb-1">Novo saldo (R$)</label>
           <input id="adj-balance" type="number" step="0.01"
                  [value]="adjustNewBalance()"
                  (input)="setAdjustNewBalance($event)"
-                 class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                 class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                 style="background: var(--flow-bg); color: var(--flow-ink)"
                  placeholder="0,00">
           @if (adjustError()) {
-            <p class="mt-1 text-sm text-danger">{{ adjustError() }}</p>
+            <p class="mt-1 font-mono-num text-[11px] text-flow-neg">{{ adjustError() }}</p>
           }
         </div>
         <div class="flex gap-3 pt-2">
           <button type="button" (click)="closeAdjustModal()"
-                  class="flex-1 rounded-lg border border-neutral-300 px-4 py-2 text-neutral-700 hover:bg-neutral-50">
+                  class="flex-1 h-9 rounded-xl border border-flow text-sm font-medium hover:bg-flow-bg transition-colors text-flow-ink-soft">
             Cancelar
           </button>
           <button type="submit"
-                  class="flex-1 rounded-lg bg-primary px-4 py-2 text-white hover:opacity-90 disabled:opacity-50"
+                  class="flex-1 h-9 rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  style="background: var(--flow-ink); color: var(--flow-bg)"
                   [disabled]="adjustNewBalance() === null">
             Aplicar
           </button>
@@ -251,109 +287,127 @@
     </app-modal>
   }
 
+  <!-- ─── Modal: Editar conta ─────────────────────────────────────── -->
   @if (showEditModal(); as account) {
-    <app-modal [title]="'Editar: ' + account.name" (closed)="closeEditModal()">
+    <app-modal [title]="account.name" eyebrow="EDITAR CONTA" (closed)="closeEditModal()">
       <form (submit)="$event.preventDefault(); onSubmitEdit()" class="space-y-4">
         <div>
-          <label for="edit-name" class="block text-sm font-medium text-neutral-700 mb-1">Nome</label>
+          <label for="edit-name" class="label-eyebrow block mb-1">Nome</label>
           <input id="edit-name" type="text"
                  [value]="editName()"
                  (input)="setEditName($event)"
-                 class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                 class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                 style="background: var(--flow-bg); color: var(--flow-ink)"
                  placeholder="Ex.: Itaú" required>
           @if (editError()) {
-            <p class="mt-1 text-sm text-danger">{{ editError() }}</p>
+            <p class="mt-1 font-mono-num text-[11px] text-flow-neg">{{ editError() }}</p>
           }
         </div>
+
+        <!-- Tipo de conta (tab switcher) -->
         <div>
-          <p class="block text-sm font-medium text-neutral-700 mb-2">Tipo de conta</p>
-          <div class="flex flex-wrap gap-3">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="edit-type" [checked]="editKind() === 'regular'"
-                     (change)="setEditKind('regular')"
-                     class="accent-primary">
-              <span class="text-sm text-neutral-700">Corrente / Poupança</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="edit-type" [checked]="editKind() === 'investment'"
-                     (change)="setEditKind('investment')"
-                     class="accent-primary">
-              <span class="text-sm text-neutral-700">Investimento</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="edit-type" [checked]="editKind() === 'credit_card'"
-                     (change)="setEditKind('credit_card')"
-                     class="accent-primary">
-              <span class="text-sm text-neutral-700">Cartão de crédito</span>
-            </label>
+          <p class="label-eyebrow block mb-2">Tipo de conta</p>
+          <div class="inline-flex border border-flow rounded-xl p-0.5 w-full" style="background: var(--flow-bg)">
+            <button type="button" (click)="setEditKind('regular')"
+                    class="flex-1 py-2 rounded-lg text-xs font-medium transition-colors"
+                    [class.bg-flow-paper]="editKind() === 'regular'"
+                    [class.text-flow-ink]="editKind() === 'regular'"
+                    [class.text-flow-ink-soft]="editKind() !== 'regular'">
+              Corrente / Poupança
+            </button>
+            <button type="button" (click)="setEditKind('investment')"
+                    class="flex-1 py-2 rounded-lg text-xs font-medium transition-colors"
+                    [class.bg-flow-paper]="editKind() === 'investment'"
+                    [class.text-flow-ink]="editKind() === 'investment'"
+                    [class.text-flow-ink-soft]="editKind() !== 'investment'">
+              Investimento
+            </button>
+            <button type="button" (click)="setEditKind('credit_card')"
+                    class="flex-1 py-2 rounded-lg text-xs font-medium transition-colors"
+                    [class.bg-flow-paper]="editKind() === 'credit_card'"
+                    [class.text-flow-ink]="editKind() === 'credit_card'"
+                    [class.text-flow-ink-soft]="editKind() !== 'credit_card'">
+              Cartão de crédito
+            </button>
           </div>
         </div>
+
         @if (editKind() === 'investment') {
           <div>
-            <label for="edit-rate" class="block text-sm font-medium text-neutral-700 mb-1">Rendimento (% a.a.)</label>
+            <label for="edit-rate" class="label-eyebrow block mb-1">Rendimento (% a.a.)</label>
             <input id="edit-rate" type="number" step="0.01" min="0"
                    [value]="editAnnualRate()"
                    (input)="setEditAnnualRate($event)"
-                   class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                   class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                   style="background: var(--flow-bg); color: var(--flow-ink)"
                    placeholder="Ex.: 12,5">
           </div>
         }
+
         @if (editKind() === 'credit_card') {
           <div>
-            <label for="edit-brand" class="block text-sm font-medium text-neutral-700 mb-1">Bandeira</label>
+            <label for="edit-brand" class="label-eyebrow block mb-1">Bandeira</label>
             <select id="edit-brand"
                     [value]="editBrand()"
                     (change)="setEditBrand($event)"
-                    class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary">
+                    class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                    style="background: var(--flow-bg); color: var(--flow-ink)">
               @for (brand of cardBrands; track brand) {
                 <option [value]="brand">{{ brand }}</option>
               }
             </select>
           </div>
           <div>
-            <label for="edit-limit" class="block text-sm font-medium text-neutral-700 mb-1">Limite (R$)</label>
+            <label for="edit-limit" class="label-eyebrow block mb-1">Limite (R$)</label>
             <input id="edit-limit" type="number" step="0.01" min="0"
                    [value]="editLimit()"
                    (input)="setEditLimit($event)"
-                   class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary"
+                   class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                   style="background: var(--flow-bg); color: var(--flow-ink)"
                    placeholder="Ex.: 5000,00">
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label for="edit-closing" class="block text-sm font-medium text-neutral-700 mb-1">Dia de fechamento</label>
+              <label for="edit-closing" class="label-eyebrow block mb-1">Dia de fechamento</label>
               <input id="edit-closing" type="number" min="1" max="31"
                      [value]="editClosingDay()"
                      (input)="setEditClosingDay($event)"
-                     class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary">
+                     class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                     style="background: var(--flow-bg); color: var(--flow-ink)">
             </div>
             <div>
-              <label for="edit-due" class="block text-sm font-medium text-neutral-700 mb-1">Dia de vencimento</label>
+              <label for="edit-due" class="label-eyebrow block mb-1">Dia de vencimento</label>
               <input id="edit-due" type="number" min="1" max="31"
                      [value]="editDueDay()"
                      (input)="setEditDueDay($event)"
-                     class="w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-800 focus:border-primary focus:ring-1 focus:ring-primary">
+                     class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                     style="background: var(--flow-bg); color: var(--flow-ink)">
             </div>
           </div>
         }
+
         <div>
-          <label for="edit-color" class="block text-sm font-medium text-neutral-700 mb-1">Cor (relatórios)</label>
+          <label for="edit-color" class="label-eyebrow block mb-1">Cor (relatórios)</label>
           <div class="flex items-center gap-3">
             <input id="edit-color" type="color"
                    [value]="editColor()"
                    (input)="setEditColor($event)"
-                   class="h-10 w-14 cursor-pointer rounded border border-neutral-300">
+                   class="h-9 w-12 cursor-pointer rounded border border-flow">
             <input type="text" [value]="editColor()" (input)="setEditColorHex($event)"
-                   class="w-24 rounded-lg border border-neutral-300 px-2 py-1.5 text-sm font-mono"
+                   class="w-24 h-9 rounded-xl border border-flow px-2 text-sm font-mono focus:outline-none"
+                   style="background: var(--flow-bg); color: var(--flow-ink)"
                    placeholder="#3b82f6" maxlength="7">
           </div>
         </div>
+
         <div class="flex gap-3 pt-2">
           <button type="button" (click)="closeEditModal()"
-                  class="flex-1 rounded-lg border border-neutral-300 px-4 py-2 text-neutral-700 hover:bg-neutral-50">
+                  class="flex-1 h-9 rounded-xl border border-flow text-sm font-medium hover:bg-flow-bg transition-colors text-flow-ink-soft">
             Cancelar
           </button>
           <button type="submit"
-                  class="flex-1 rounded-lg bg-primary px-4 py-2 text-white hover:opacity-90 disabled:opacity-50"
+                  class="flex-1 h-9 rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  style="background: var(--flow-ink); color: var(--flow-bg)"
                   [disabled]="!editName().trim()">
             Salvar
           </button>
@@ -362,20 +416,22 @@
     </app-modal>
   }
 
+  <!-- ─── Modal: Excluir conta ────────────────────────────────────── -->
   @if (showDeleteConfirm(); as account) {
-    <app-modal title="Excluir conta" (closed)="closeDeleteConfirm()">
+    <app-modal title="Excluir conta" eyebrow="ATENÇÃO" (closed)="closeDeleteConfirm()">
       <div class="space-y-4">
-        <p class="text-neutral-700">
+        <p class="text-sm text-flow-ink">
           Tem certeza que deseja excluir a conta <strong>{{ account.name }}</strong>?
           Esta ação não pode ser desfeita.
         </p>
         <div class="flex gap-3 pt-2">
           <button type="button" (click)="closeDeleteConfirm()"
-                  class="flex-1 rounded-lg border border-neutral-300 px-4 py-2 text-neutral-700 hover:bg-neutral-50">
+                  class="flex-1 h-9 rounded-xl border border-flow text-sm font-medium hover:bg-flow-bg transition-colors text-flow-ink-soft">
             Cancelar
           </button>
           <button type="button" (click)="onConfirmDelete()"
-                  class="flex-1 rounded-lg bg-danger px-4 py-2 text-white hover:opacity-90">
+                  class="flex-1 h-9 rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                  style="background: var(--flow-neg); color: #fff">
             Excluir
           </button>
         </div>

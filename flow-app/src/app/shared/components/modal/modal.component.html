@@ -2,22 +2,30 @@
      role="dialog"
      aria-modal="true"
      (click)="onOverlayClick($event)">
-  <div class="absolute inset-0 modal-overlay bg-neutral-900/60 dark:bg-black/70"
-       aria-hidden="true"></div>
-  <div class="relative bg-white dark:bg-neutral-900 rounded-xl shadow-xl max-h-[90vh] w-full max-w-lg flex flex-col border border-neutral-200 dark:border-neutral-700"
+  <div class="absolute inset-0 modal-overlay" style="background: rgba(0,0,0,.5)" aria-hidden="true"></div>
+  <div class="relative rounded-2xl overflow-hidden max-h-[90vh] w-full max-w-lg flex flex-col"
+       style="background: var(--flow-paper); border: 1px solid var(--flow-line); box-shadow: var(--flow-shadow-card)"
        (click)="$event.stopPropagation()">
-    <div class="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 shrink-0">
-      <h2 class="text-lg font-semibold text-neutral-800 dark:text-neutral-100">{{ title() }}</h2>
+    <div class="flex items-center justify-between px-6 py-4 border-b border-flow shrink-0">
+      <div>
+        @if (eyebrow()) {
+          <span class="label-eyebrow">{{ eyebrow() }}</span>
+          <h2 class="font-serif text-2xl mt-0.5">{{ title() }}</h2>
+        } @else {
+          <h2 class="font-serif text-2xl">{{ title() }}</h2>
+        }
+      </div>
       <button type="button"
               (click)="close()"
-              class="p-2 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-700 dark:hover:text-white transition-colors"
+              class="h-8 w-8 grid place-items-center rounded-lg border border-flow hover:bg-flow-bg transition-colors"
+              style="color: var(--flow-ink-soft)"
               aria-label="Fechar">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
     </div>
-    <div class="px-6 py-4 overflow-y-auto flex-1">
+    <div class="px-6 py-5 overflow-y-auto flex-1">
       <ng-content />
     </div>
   </div>

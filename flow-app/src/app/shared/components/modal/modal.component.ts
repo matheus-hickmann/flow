@@ -7,6 +7,7 @@ import { Component, input, output } from '@angular/core';
 })
 export class ModalComponent {
   title = input.required<string>();
+  eyebrow = input<string>('');
   closeOnOverlay = input<boolean>(true);
 
   readonly closed = output<void>();

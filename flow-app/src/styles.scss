@@ -6,9 +6,16 @@
 
 /* ─── Design tokens ─────────────────────────────────────────────────
    Cores principais ficam em tailwind.config.js. As variáveis abaixo
-   são apenas para uso direto em SCSS/CSS (ex: ::before, gradientes).
+   são usadas por SCSS/CSS direto (gradientes, pseudo-elementos) e
+   também alimentam o `<flow-mark>` component.
+
+   Dark mode: aplicado em `body[data-theme="dark"]`. Para alternar:
+     document.body.dataset.theme = 'dark';   // ou 'light'
+   Tailwind continua respondendo via a classe `.dark` no <html> —
+   ambos os mecanismos são compatíveis lado a lado.
    ─────────────────────────────────────────────────────────────────── */
 :root {
+  /* Surfaces */
   --flow-bg:        #f5f0e6;
   --flow-paper:     #fbf8f1;
   --flow-ink:       #1d1a16;
@@ -16,22 +23,63 @@
   --flow-ink-mute:  #9a9389;
   --flow-line:      #e3ddcf;
   --flow-line-soft: #ecead8;
-  --flow-mint:      #cce8d6;
-  --flow-peach:     #f4d8c7;
-  --flow-butter:    #f3e9b9;
-  --flow-lilac:     #dcd2ec;
-  --flow-rose:      #edd1d6;
-  --flow-sage:      #cdd9be;
-  --flow-sky:       #cfdfeb;
-  --flow-pos:       #2c6b3d;
-  --flow-neg:       #a84439;
+
+  /* Pastéis — fill + ink legível por cima */
+  --flow-mint:      #cce8d6;  --flow-mint-ink:   #1f4f33;
+  --flow-peach:     #f4d8c7;  --flow-peach-ink:  #7a3a1d;
+  --flow-butter:    #f3e9b9;  --flow-butter-ink: #6b5a16;
+  --flow-lilac:     #dcd2ec;  --flow-lilac-ink:  #4a3a73;
+  --flow-rose:      #edd1d6;  --flow-rose-ink:   #7a2a3a;
+  --flow-sage:      #cdd9be;  --flow-sage-ink:   #3d5526;
+  --flow-sky:       #cfdfeb;  --flow-sky-ink:    #1f4a6b;
+
+  /* Semantic */
+  --flow-pos:       #2c6b3d;  --flow-pos-bg:     #cce8d6;
+  --flow-neg:       #a84439;  --flow-neg-bg:     #edd1d6;
+
+  /* Overlays neutros — alteram intensidade entre light/dark */
+  --flow-band:      rgba(0,0,0,0.08);
+  --flow-hairline:  rgba(0,0,0,0.12);
+  --flow-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+}
+
+/* ─── Dark theme ─────────────────────────────────────────────────────
+   Espresso warm — mesma família tonal do bone-white, só "torrada".
+   Pastéis viram tons de joia; o `*-ink` correspondente é a leitura
+   clarinha por cima (chip-on-chip mantém contraste AA).
+   ─────────────────────────────────────────────────────────────────── */
+body[data-theme="dark"],
+html.dark {
+  --flow-bg:        #15110c;
+  --flow-paper:     #1d1813;
+  --flow-ink:       #efeae0;
+  --flow-ink-soft:  #9a9388;
+  --flow-ink-mute:  #6a655b;
+  --flow-line:      #2a241d;
+  --flow-line-soft: #221d17;
+
+  --flow-mint:      #1a3527;  --flow-mint-ink:   #9dd4b3;
+  --flow-peach:     #3d2618;  --flow-peach-ink:  #efc4a4;
+  --flow-butter:    #3a2f10;  --flow-butter-ink: #e8d68f;
+  --flow-lilac:     #28213e;  --flow-lilac-ink:  #c6b6e8;
+  --flow-rose:      #3a1620;  --flow-rose-ink:   #ebb6c0;
+  --flow-sage:      #283318;  --flow-sage-ink:   #c2d29e;
+  --flow-sky:       #18293c;  --flow-sky-ink:    #abcae8;
+
+  --flow-pos:       #6cc28a;  --flow-pos-bg:     #1a3527;
+  --flow-neg:       #e87264;  --flow-neg-bg:     #3a1620;
+
+  --flow-band:      rgba(255,255,255,0.10);
+  --flow-hairline:  rgba(255,255,255,0.14);
+  --flow-shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.45);
 }
 
 body {
-  @apply text-neutral-800;
   background: var(--flow-bg);
+  color: var(--flow-ink);
   font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
   font-feature-settings: 'ss01', 'cv11';
+  transition: background-color 160ms ease, color 160ms ease;
 }
 
 /* Tipografia editorial */
@@ -57,20 +105,55 @@ body {
   color: var(--flow-ink-soft);
 }
 
-/* Pastel surfaces — ainda podem ser usadas via @apply nas Tailwind classes */
-.bg-flow-paper { background: var(--flow-paper); }
-.bg-flow-bg { background: var(--flow-bg); }
-.border-flow { border-color: var(--flow-line); }
+/* Pastel surfaces — respondem ao tema automaticamente */
+.bg-flow-paper { background: var(--flow-paper); color: var(--flow-ink); }
+.bg-flow-bg    { background: var(--flow-bg);    color: var(--flow-ink); }
+.border-flow      { border-color: var(--flow-line); }
 .border-flow-soft { border-color: var(--flow-line-soft); }
+
+/* Card pattern */
+.flow-card {
+  background: var(--flow-paper);
+  border: 1px solid var(--flow-line);
+  border-radius: 12px;
+  box-shadow: var(--flow-shadow-card);
+}
 
 /* Scrollbar discreta */
 *::-webkit-scrollbar { width: 8px; height: 8px; }
 *::-webkit-scrollbar-thumb { background: var(--flow-line); border-radius: 99px; }
 *::-webkit-scrollbar-track { background: transparent; }
 
-/* Privacy mode (opcional) — adicione a classe .privacy ao <body> */
-.privacy .font-mono-num {
+/* Privacy mode — adicione `.privacy` ao <body> ou use [data-privacy="on"] */
+.privacy .font-mono-num,
+[data-privacy="on"] .font-mono-num {
   filter: blur(7px);
   transition: filter .2s;
 }
-.privacy .font-mono-num:hover { filter: blur(0); }
+.privacy .font-mono-num:hover,
+[data-privacy="on"] .font-mono-num:hover { filter: blur(0); }
+
+/* Honra preferência do SO se nenhum tema foi forçado manualmente */
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme]) {
+    --flow-bg:        #15110c;
+    --flow-paper:     #1d1813;
+    --flow-ink:       #efeae0;
+    --flow-ink-soft:  #9a9388;
+    --flow-ink-mute:  #6a655b;
+    --flow-line:      #2a241d;
+    --flow-line-soft: #221d17;
+    --flow-mint:      #1a3527;  --flow-mint-ink:   #9dd4b3;
+    --flow-peach:     #3d2618;  --flow-peach-ink:  #efc4a4;
+    --flow-butter:    #3a2f10;  --flow-butter-ink: #e8d68f;
+    --flow-lilac:     #28213e;  --flow-lilac-ink:  #c6b6e8;
+    --flow-rose:      #3a1620;  --flow-rose-ink:   #ebb6c0;
+    --flow-sage:      #283318;  --flow-sage-ink:   #c2d29e;
+    --flow-sky:       #18293c;  --flow-sky-ink:    #abcae8;
+    --flow-pos:       #6cc28a;  --flow-pos-bg:     #1a3527;
+    --flow-neg:       #e87264;  --flow-neg-bg:     #3a1620;
+    --flow-band:      rgba(255,255,255,0.10);
+    --flow-hairline:  rgba(255,255,255,0.14);
+    --flow-shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.45);
+  }
+}

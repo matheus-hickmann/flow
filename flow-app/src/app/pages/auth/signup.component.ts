@@ -5,6 +5,7 @@ import { switchMap } from 'rxjs/operators';
 
 import { AuthService } from '../../core/services/auth.service';
 import { ENVIRONMENT } from '../../core/config';
+import { FlowMarkComponent } from '../../shared';
 
 const SUGGESTED_QUESTIONS = [
   'Qual o nome do seu primeiro animal de estimação?',
@@ -26,14 +27,15 @@ function generateUserId(): string {
 
 @Component({
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, FlowMarkComponent],
   template: `
     <div class="min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-950 px-4 py-8">
       <div class="w-full max-w-md space-y-8">
         <div class="text-center">
-          <img src="assets/futureflow-logo.png" alt="Future Flow" class="mx-auto h-20 w-auto object-contain" />
+          <div class="flex justify-center text-neutral-900 dark:text-white">
+            <flow-mark variant="wordmark" [height]="48" />
+          </div>
           <h1 class="mt-6 text-2xl font-bold text-neutral-900 dark:text-white">Criar conta</h1>
-          <p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">{{ appName }}</p>
         </div>
         <form (ngSubmit)="onSubmit()" class="space-y-5 rounded-xl bg-white dark:bg-neutral-900 p-6 shadow-sm border border-neutral-200 dark:border-neutral-700">
           @if (errorMessage()) {

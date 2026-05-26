@@ -1,36 +1,65 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, effect, computed } from '@angular/core';
 
-const STORAGE_KEY = 'flow_theme';
+export type FlowTheme = 'light' | 'dark' | 'system';
+
+const STORAGE_KEY = 'flow.theme';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  private readonly darkSignal = signal<boolean>(this.loadPreference());
-  readonly isDark = this.darkSignal.asReadonly();
+  readonly preference = signal<FlowTheme>(this.readInitial());
+  readonly resolved = signal<'light' | 'dark'>(this.resolveInitial());
+
+  /** Compatibilidade com código que usa `theme.isDark()`. */
+  readonly isDark = computed(() => this.resolved() === 'dark');
+
+  private mql = typeof window !== 'undefined'
+    ? window.matchMedia('(prefers-color-scheme: dark)')
+    : null;
 
   constructor() {
-    this.applyTheme(this.darkSignal());
+    this.mql?.addEventListener('change', () => {
+      if (this.preference() === 'system') {
+        this.resolved.set(this.mql!.matches ? 'dark' : 'light');
+      }
+    });
+    effect(() => {
+      const pref = this.preference();
+      const next: 'light' | 'dark' =
+        pref === 'system' ? (this.mql?.matches ? 'dark' : 'light') : pref;
+      this.resolved.set(next);
+      this.apply(next);
+      try { localStorage.setItem(STORAGE_KEY, pref); } catch {}
+    });
+  }
+
+  set(theme: FlowTheme): void {
+    this.preference.set(theme);
   }
 
   toggle(): void {
-    this.set(!this.darkSignal());
+    this.preference.set(this.resolved() === 'dark' ? 'light' : 'dark');
   }
 
-  set(dark: boolean): void {
-    this.darkSignal.set(dark);
-    this.applyTheme(dark);
-    localStorage.setItem(STORAGE_KEY, dark ? 'dark' : 'light');
+  private readInitial(): FlowTheme {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY)
+        ?? localStorage.getItem('flow_theme');
+      if (stored === 'light' || stored === 'dark' || stored === 'system') return stored;
+      if (stored === 'true') return 'dark';
+      if (stored === 'false') return 'light';
+    } catch {}
+    return 'system';
   }
 
-  private applyTheme(dark: boolean): void {
-    if (typeof document !== 'undefined') {
-      document.documentElement.classList.toggle('dark', dark);
-    }
+  private resolveInitial(): 'light' | 'dark' {
+    const pref = this.readInitial();
+    if (pref === 'light' || pref === 'dark') return pref;
+    return this.mql?.matches ? 'dark' : 'light';
   }
 
-  private loadPreference(): boolean {
-    if (typeof localStorage === 'undefined') return false;
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) return stored === 'dark';
-    return typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+  private apply(theme: 'light' | 'dark'): void {
+    if (typeof document === 'undefined') return;
+    document.body.dataset['theme'] = theme;
+    document.documentElement.classList.toggle('dark', theme === 'dark');
   }
 }

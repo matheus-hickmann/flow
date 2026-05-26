@@ -1,0 +1,363 @@
+<div class="font-sans space-y-6" style="color: var(--flow-ink)">
+
+  <!-- ─── Sub-header ──────────────────────────────────────────────── -->
+  <div class="flex items-center justify-between pb-4 border-b border-flow">
+    <div class="flex items-center gap-4">
+      <span class="label-eyebrow">CONTROLE</span>
+      <h1 class="font-serif text-3xl m-0">
+        Dívidas
+        <span class="italic" style="color: var(--flow-ink-soft)"> · ativas & quitadas</span>
+      </h1>
+    </div>
+    <button type="button" (click)="openForm()"
+            class="h-8 inline-flex items-center gap-1.5 px-3 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
+            style="background: var(--flow-ink); color: var(--flow-bg)">
+      <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+      Nova dívida
+    </button>
+  </div>
+
+  @if (error()) {
+    <p class="font-mono-num text-[11px]" style="color: var(--flow-neg)">{{ error() }}</p>
+  }
+
+  <!-- ─── Hero band: 3 cards de resumo ────────────────────────────── -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+    <div class="bg-flow-paper border border-flow rounded-2xl px-5 py-5">
+      <span class="label-eyebrow">VOCÊ DEVE</span>
+      <div class="mt-1.5">
+        <span class="font-serif-display text-[44px]" style="color: var(--flow-neg)">{{ totalToPayActive() | currencyBrl }}</span>
+      </div>
+      <p class="font-mono-num text-[11px] mt-2" style="color: var(--flow-ink-soft)">saldo devedor ativo</p>
+    </div>
+
+    <div class="border border-flow rounded-2xl px-5 py-5" style="background: var(--flow-mint)">
+      <span class="label-eyebrow" style="color: var(--flow-mint-ink)">TE DEVEM</span>
+      <div class="mt-1.5">
+        <span class="font-serif-display text-[44px]" style="color: var(--flow-mint-ink)">{{ totalToReceiveActive() | currencyBrl }}</span>
+      </div>
+      <p class="font-mono-num text-[11px] mt-2" style="color: var(--flow-mint-ink); opacity: .7">a receber ativo</p>
+    </div>
+
+    <div class="border border-flow rounded-2xl px-5 py-5"
+         [style.background]="netBalance() >= 0 ? 'var(--flow-mint)' : 'var(--flow-peach)'">
+      <div class="flex items-center justify-between">
+        <span class="label-eyebrow"
+              [style.color]="netBalance() >= 0 ? 'var(--flow-mint-ink)' : 'var(--flow-peach-ink)'">SALDO LÍQUIDO</span>
+        <span class="font-mono-num text-[10px] px-2 py-0.5 rounded-full text-white"
+              [style.background]="netBalance() >= 0 ? 'var(--flow-pos)' : 'var(--flow-neg)'">
+          {{ netBalance() >= 0 ? '▲ a favor' : '▼ contra você' }}
+        </span>
+      </div>
+      <div class="mt-1.5">
+        <span class="font-serif-display text-[44px]"
+              [style.color]="netBalance() >= 0 ? 'var(--flow-mint-ink)' : 'var(--flow-peach-ink)'">
+          {{ (netBalance() < 0 ? -netBalance() : netBalance()) | currencyBrl }}
+        </span>
+      </div>
+    </div>
+  </section>
+
+  @if (loading()) {
+    <div class="bg-flow-paper border border-flow rounded-2xl p-10 text-center">
+      <span class="label-eyebrow">Carregando…</span>
+    </div>
+  } @else {
+
+    <!-- ─── Dívidas ativas ────────────────────────────────────────── -->
+    @if (activeDebts().length > 0) {
+      <section class="bg-flow-paper border border-flow rounded-2xl overflow-hidden">
+        <header class="px-6 py-4 border-b border-flow-soft">
+          <span class="label-eyebrow">DÍVIDAS ATIVAS</span>
+          <div class="mt-1 font-serif text-2xl">
+            {{ activeDebts().length }} {{ activeDebts().length === 1 ? 'registro' : 'registros' }}
+          </div>
+        </header>
+
+        <ul>
+          @for (debt of activeDebts(); track debt.id) {
+            <li class="px-6 py-4 border-b border-flow-soft last:border-0">
+              <div class="flex items-start justify-between gap-4">
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-[14px] font-medium" style="color: var(--flow-ink)">{{ debt.name }}</span>
+
+                    @if (debt.type === 'TO_PAY') {
+                      <span class="font-mono-num text-[10px] px-2 py-0.5 rounded-full font-medium"
+                            style="background: var(--flow-rose); color: var(--flow-rose-ink)">A PAGAR</span>
+                    } @else {
+                      <span class="font-mono-num text-[10px] px-2 py-0.5 rounded-full font-medium"
+                            style="background: var(--flow-mint); color: var(--flow-mint-ink)">A RECEBER</span>
+                    }
+
+                    @if (isOverdue(debt)) {
+                      <span class="font-mono-num text-[10px] px-2 py-0.5 rounded-full font-medium"
+                            style="background: var(--flow-butter); color: var(--flow-butter-ink)">VENCIDA</span>
+                    }
+                  </div>
+
+                  @if (debt.counterparty) {
+                    <p class="font-mono-num text-[11px] mt-1" style="color: var(--flow-ink-soft)">{{ debt.counterparty }}</p>
+                  }
+                  @if (debt.dueDate) {
+                    <p class="font-mono-num text-[11px] mt-0.5" style="color: var(--flow-ink-mute)">Vence em {{ formatDate(debt.dueDate) }}</p>
+                  }
+
+                  <div class="mt-3 space-y-1">
+                    <div class="flex justify-between font-mono-num text-[10px]" style="color: var(--flow-ink-soft)">
+                      <span>{{ progressPct(debt) }}% pago</span>
+                      <span>Restam {{ debt.remaining | currencyBrl }}</span>
+                    </div>
+                    <div class="h-1.5 rounded-full overflow-hidden" style="background: var(--flow-line)">
+                      <div class="h-full rounded-full transition-all duration-500"
+                           [style.width.%]="progressPct(debt)"
+                           [style.background]="debt.type === 'TO_PAY' ? 'var(--flow-neg)' : 'var(--flow-pos)'">
+                      </div>
+                    </div>
+                  </div>
+
+                  @if (debt.notes) {
+                    <p class="text-[12px] italic mt-2" style="color: var(--flow-ink-mute)">{{ debt.notes }}</p>
+                  }
+                </div>
+
+                <div class="flex flex-col items-end gap-2 shrink-0">
+                  <span class="font-serif-display text-[22px]"
+                        [style.color]="debt.type === 'TO_PAY' ? 'var(--flow-neg)' : 'var(--flow-pos)'">
+                    {{ debt.amount | currencyBrl }}
+                  </span>
+                  <div class="flex items-center gap-1">
+                    <button type="button" (click)="openPayment(debt)"
+                            class="h-7 px-3 rounded-lg border border-flow text-xs font-medium hover:bg-flow-bg transition-colors"
+                            style="color: var(--flow-ink-soft)">
+                      Registrar pagamento
+                    </button>
+                    <button type="button" (click)="deleteDebt(debt.id)"
+                            class="h-7 w-7 grid place-items-center rounded-lg border border-flow hover:bg-flow-bg transition-colors"
+                            style="color: var(--flow-ink-mute)" title="Remover">
+                      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <!-- ─── Quitadas ──────────────────────────────────────────────── -->
+    @if (settledDebts().length > 0) {
+      <section class="bg-flow-paper border border-flow rounded-2xl overflow-hidden">
+        <header class="px-6 py-4 border-b border-flow-soft">
+          <span class="label-eyebrow">QUITADAS</span>
+          <div class="mt-1 font-serif text-2xl">
+            {{ settledDebts().length }} {{ settledDebts().length === 1 ? 'registro' : 'registros' }}
+          </div>
+        </header>
+        <ul>
+          @for (debt of settledDebts(); track debt.id) {
+            <li class="px-6 py-3 flex items-center justify-between gap-4 border-b border-flow-soft last:border-0"
+                style="opacity: .6">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                     style="color: var(--flow-pos)">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="text-[13px] font-medium truncate" style="text-decoration: line-through; color: var(--flow-ink)">{{ debt.name }}</span>
+                @if (debt.counterparty) {
+                  <span class="font-mono-num text-[11px] shrink-0" style="color: var(--flow-ink-soft)">· {{ debt.counterparty }}</span>
+                }
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="font-mono-num text-sm font-medium" style="color: var(--flow-ink-soft)">{{ debt.amount | currencyBrl }}</span>
+                <button type="button" (click)="deleteDebt(debt.id)"
+                        class="h-7 w-7 grid place-items-center rounded-lg border border-flow hover:bg-flow-bg transition-colors"
+                        style="color: var(--flow-ink-mute)" title="Remover">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <!-- ─── Empty state ───────────────────────────────────────────── -->
+    @if (activeDebts().length === 0 && settledDebts().length === 0) {
+      <div class="bg-flow-paper border border-flow rounded-2xl p-12 text-center">
+        <svg class="mx-auto h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"
+             style="color: var(--flow-ink-mute)">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <p class="font-mono-num text-[11px] mt-3" style="color: var(--flow-ink-mute)">Nenhuma dívida registrada.</p>
+        <button type="button" (click)="openForm()"
+                class="mt-4 h-8 inline-flex items-center gap-1.5 px-3 rounded-lg text-xs font-medium hover:opacity-90"
+                style="background: var(--flow-ink); color: var(--flow-bg)">
+          Adicionar primeira dívida
+        </button>
+      </div>
+    }
+  }
+</div>
+
+<!-- ─── Modal: nova dívida ────────────────────────────────────────── -->
+@if (showForm()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,.5)">
+    <div class="w-full max-w-md rounded-2xl overflow-hidden" style="background: var(--flow-paper); box-shadow: var(--flow-shadow-card)">
+
+      <div class="flex items-center justify-between px-6 py-4 border-b border-flow">
+        <div>
+          <span class="label-eyebrow">NOVA DÍVIDA</span>
+          <div class="mt-0.5 font-serif text-2xl">Registrar</div>
+        </div>
+        <button type="button" (click)="closeForm()"
+                class="h-8 w-8 grid place-items-center rounded-lg border border-flow hover:bg-flow-bg transition-colors"
+                style="color: var(--flow-ink-soft)">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="px-6 py-5 space-y-4">
+
+        <!-- Tipo -->
+        <div class="inline-flex border border-flow rounded-xl p-0.5 w-full" style="background: var(--flow-bg)">
+          <button type="button" (click)="formType.set('TO_PAY')"
+                  class="flex-1 py-2 rounded-lg text-xs font-medium transition-colors"
+                  [style.background]="formType() === 'TO_PAY' ? 'var(--flow-rose)' : 'transparent'"
+                  [style.color]="formType() === 'TO_PAY' ? 'var(--flow-rose-ink)' : 'var(--flow-ink-soft)'">
+            Devo a alguém
+          </button>
+          <button type="button" (click)="formType.set('TO_RECEIVE')"
+                  class="flex-1 py-2 rounded-lg text-xs font-medium transition-colors"
+                  [style.background]="formType() === 'TO_RECEIVE' ? 'var(--flow-mint)' : 'transparent'"
+                  [style.color]="formType() === 'TO_RECEIVE' ? 'var(--flow-mint-ink)' : 'var(--flow-ink-soft)'">
+            Me devem
+          </button>
+        </div>
+
+        <div>
+          <label class="label-eyebrow block mb-1">Descrição *</label>
+          <input type="text" [ngModel]="formName()" (ngModelChange)="formName.set($event)"
+                 placeholder="ex: Empréstimo pessoal"
+                 class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                 style="background: var(--flow-bg); color: var(--flow-ink)" />
+        </div>
+
+        <div>
+          <label class="label-eyebrow block mb-1">Valor total *</label>
+          <input type="number" [ngModel]="formAmount()" (ngModelChange)="formAmount.set($event)"
+                 placeholder="0,00" min="0.01" step="0.01"
+                 class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                 style="background: var(--flow-bg); color: var(--flow-ink)" />
+        </div>
+
+        <div>
+          <label class="label-eyebrow block mb-1">{{ formType() === 'TO_PAY' ? 'Credor' : 'Devedor' }}</label>
+          <input type="text" [ngModel]="formCounterparty()" (ngModelChange)="formCounterparty.set($event)"
+                 placeholder="Nome da pessoa ou empresa"
+                 class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                 style="background: var(--flow-bg); color: var(--flow-ink)" />
+        </div>
+
+        <div>
+          <label class="label-eyebrow block mb-1">Vencimento (opcional)</label>
+          <input type="date" [ngModel]="formDueDate()" (ngModelChange)="formDueDate.set($event)"
+                 class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                 style="background: var(--flow-bg); color: var(--flow-ink)" />
+        </div>
+
+        <div>
+          <label class="label-eyebrow block mb-1">Observações (opcional)</label>
+          <textarea [ngModel]="formNotes()" (ngModelChange)="formNotes.set($event)"
+                    rows="2" placeholder="Detalhes adicionais…"
+                    class="w-full px-3 py-2 rounded-xl border border-flow text-sm focus:outline-none resize-none"
+                    style="background: var(--flow-bg); color: var(--flow-ink)"></textarea>
+        </div>
+
+        @if (formError()) {
+          <p class="font-mono-num text-[11px]" style="color: var(--flow-neg)">{{ formError() }}</p>
+        }
+      </div>
+
+      <div class="px-6 pb-5 flex gap-3">
+        <button type="button" (click)="closeForm()"
+                class="flex-1 h-9 rounded-xl border border-flow text-sm font-medium hover:bg-flow-bg transition-colors"
+                style="color: var(--flow-ink-soft)">
+          Cancelar
+        </button>
+        <button type="button" (click)="submitForm()" [disabled]="formLoading()"
+                class="flex-1 h-9 rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+                style="background: var(--flow-ink); color: var(--flow-bg)">
+          {{ formLoading() ? 'Salvando…' : 'Salvar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ─── Modal: registrar pagamento ──────────────────────────────── -->
+@if (paymentDebt(); as debt) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,.5)">
+    <div class="w-full max-w-sm rounded-2xl overflow-hidden" style="background: var(--flow-paper); box-shadow: var(--flow-shadow-card)">
+
+      <div class="flex items-center justify-between px-6 py-4 border-b border-flow">
+        <div>
+          <span class="label-eyebrow">PAGAMENTO</span>
+          <div class="mt-0.5 font-serif text-2xl">Registrar</div>
+        </div>
+        <button type="button" (click)="closePayment()"
+                class="h-8 w-8 grid place-items-center rounded-lg border border-flow hover:bg-flow-bg transition-colors"
+                style="color: var(--flow-ink-soft)">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="px-6 py-5 space-y-4">
+        <div class="rounded-xl border border-flow px-4 py-3" style="background: var(--flow-bg)">
+          <p class="text-[13px] font-medium" style="color: var(--flow-ink)">{{ debt.name }}</p>
+          <p class="font-mono-num text-[11px] mt-0.5" style="color: var(--flow-ink-soft)">
+            Saldo devedor: <strong>{{ debt.remaining | currencyBrl }}</strong>
+          </p>
+        </div>
+
+        <div>
+          <label class="label-eyebrow block mb-1">Valor pago *</label>
+          <input type="number" [ngModel]="paymentAmount()" (ngModelChange)="paymentAmount.set($event)"
+                 placeholder="0,00" min="0.01" [max]="debt.remaining" step="0.01"
+                 class="w-full h-9 px-3 rounded-xl border border-flow text-sm focus:outline-none"
+                 style="background: var(--flow-bg); color: var(--flow-ink)" />
+        </div>
+
+        @if (paymentError()) {
+          <p class="font-mono-num text-[11px]" style="color: var(--flow-neg)">{{ paymentError() }}</p>
+        }
+      </div>
+
+      <div class="px-6 pb-5 flex gap-3">
+        <button type="button" (click)="closePayment()"
+                class="flex-1 h-9 rounded-xl border border-flow text-sm font-medium hover:bg-flow-bg transition-colors"
+                style="color: var(--flow-ink-soft)">
+          Cancelar
+        </button>
+        <button type="button" (click)="submitPayment()" [disabled]="paymentLoading()"
+                class="flex-1 h-9 rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+                style="background: var(--flow-ink); color: var(--flow-bg)">
+          {{ paymentLoading() ? 'Registrando…' : 'Confirmar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
